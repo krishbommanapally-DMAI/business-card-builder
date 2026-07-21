@@ -8,6 +8,7 @@ export interface User {
   email: string;
   fullName: string;
   role: 'super_admin' | 'admin' | 'premium_user' | 'free_user' | 'visitor';
+  isVerified?: boolean;
   subscription: {
     plan: 'Free' | 'Basic' | 'Premium' | 'Enterprise';
     status: 'active' | 'suspended' | 'expired';
