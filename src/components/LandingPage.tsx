@@ -12,11 +12,13 @@ import {
 import { subscriptionPlans, mockFAQs } from '../data/mockData';
 
 interface LandingPageProps {
-  onLogin: (role: 'free_user' | 'premium_user' | 'super_admin') => void;
+  onRealLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  onRealRegister: (email: string, password: string, fullName: string) => Promise<{ success: boolean; error?: string }>;
   onSelectCard: (slug: string) => void;
+  isSupabaseConnected: boolean;
 }
 
-export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps) {
+export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard, isSupabaseConnected }: LandingPageProps) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,11 +26,41 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
-  const [selectedRoleForSim, setSelectedRoleForSim] = useState<'free_user' | 'premium_user' | 'super_admin'>('premium_user');
+  const [authFullName, setAuthFullName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  const handleSimulatedAuth = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(selectedRoleForSim);
+    setAuthLoading(true);
+    setAuthError(null);
+
+    try {
+      if (authMode === 'login') {
+        const result = await onRealLogin(authEmail, authPassword);
+        if (!result.success) {
+          setAuthError(result.error || 'Login failed. Please check your credentials.');
+        } else {
+          setShowAuthModal(false);
+        }
+      } else {
+        if (!authFullName.trim()) {
+          setAuthError('Please enter your full name.');
+          setAuthLoading(false);
+          return;
+        }
+        const result = await onRealRegister(authEmail, authPassword, authFullName);
+        if (!result.success) {
+          setAuthError(result.error || 'Registration failed.');
+        } else {
+          setShowAuthModal(false);
+        }
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const getPrice = (priceStr: string) => {
@@ -516,13 +548,6 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
 
                   <button 
                     onClick={() => {
-                      if (plan.name === 'Free') {
-                        setSelectedRoleForSim('free_user');
-                      } else if (plan.name === 'Premium') {
-                        setSelectedRoleForSim('premium_user');
-                      } else {
-                        setSelectedRoleForSim('super_admin');
-                      }
                       setAuthMode('register');
                       setShowAuthModal(true);
                     }}
@@ -717,22 +742,34 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
           </div>
 
           <div>
-            <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-widest text-[10px]">Platform Sandbox Access</h4>
+            <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-widest text-[10px]">Platform Quick Access</h4>
             <div className="flex flex-col gap-2">
               <button 
                 id="btn-quick-admin-login"
-                onClick={() => onLogin('super_admin')} 
+                onClick={() => {
+                  setAuthEmail('admin@cardnest.com');
+                  setAuthPassword('admin');
+                  setAuthMode('login');
+                  setAuthError(null);
+                  setShowAuthModal(true);
+                }} 
                 className="text-left bg-indigo-950 hover:bg-indigo-900 text-indigo-300 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-between border border-indigo-900/40 transition-all cursor-pointer"
               >
-                <span>🔑 Enter Admin Panel</span>
+                <span>🔑 Enter Admin (Quick Fill)</span>
                 <ArrowRight size={13} />
               </button>
               <button 
                 id="btn-quick-premium-login"
-                onClick={() => onLogin('premium_user')} 
+                onClick={() => {
+                  setAuthEmail('alex.rivera@designco.io');
+                  setAuthPassword('password123');
+                  setAuthMode('login');
+                  setAuthError(null);
+                  setShowAuthModal(true);
+                }} 
                 className="text-left bg-slate-850 hover:bg-slate-800 text-indigo-200 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-between border border-slate-800 transition-all cursor-pointer"
               >
-                <span>✨ Enter User Builder (Premium)</span>
+                <span>✨ Enter User Builder (Quick Fill)</span>
                 <ArrowRight size={13} />
               </button>
             </div>
@@ -759,7 +796,10 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
           >
             <button 
               id="btn-close-auth-modal"
-              onClick={() => setShowAuthModal(false)}
+              onClick={() => {
+                setShowAuthModal(false);
+                setAuthError(null);
+              }}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors"
             >
               <X size={20} />
@@ -777,42 +817,79 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
               </p>
             </div>
 
-            {/* Sandbox Simulation Alert */}
-            <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl text-left mb-6 text-xs text-indigo-950">
-              <h4 className="font-bold flex items-center gap-1 text-indigo-800">
-                ⚡ Sandbox Mode Pre-configured
-              </h4>
-              <p className="mt-1 text-indigo-700/90 leading-normal">
-                No real credit card required. To expedite testing, pick a simulated role below, input any sample email, and click <strong>Simulate Credentials</strong>.
-              </p>
+            {/* Real Connection Status Banner */}
+            <div className="mb-4 flex items-center justify-center">
+              {isSupabaseConnected ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Supabase Live Auth Active
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  Secure Local Database Active (Sandbox)
+                </span>
+              )}
+            </div>
 
-              {/* Role Select */}
-              <div className="mt-3 grid grid-cols-3 gap-2">
+            {/* Error Message Display */}
+            {authError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-150 text-red-700 text-xs font-semibold rounded-xl text-center">
+                ⚠️ {authError}
+              </div>
+            )}
+
+            {/* Demo Accounts Quick Fill (Highly Convenient) */}
+            <div className="mb-5 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl text-left">
+              <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                💡 Demo Quick-Fill Accounts
+              </h4>
+              <p className="text-[10px] text-slate-500 mt-0.5 mb-2.5">
+                Click a user below to prefill real credentials, then submit to verify the auth pipeline.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setSelectedRoleForSim('free_user')}
-                  className={`p-2 rounded-lg font-bold border text-center transition-all ${selectedRoleForSim === 'free_user' ? 'bg-white border-indigo-600 text-indigo-950 shadow-sm' : 'bg-transparent border-slate-200 text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => {
+                    setAuthEmail('alex.rivera@designco.io');
+                    setAuthPassword('password123');
+                    setAuthMode('login');
+                    setAuthError(null);
+                  }}
+                  className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
                 >
-                  Free User
+                  👤 Alex Rivera (User)
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedRoleForSim('premium_user')}
-                  className={`p-2 rounded-lg font-bold border text-center transition-all ${selectedRoleForSim === 'premium_user' ? 'bg-white border-indigo-600 text-indigo-950 shadow-sm' : 'bg-transparent border-slate-200 text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => {
+                    setAuthEmail('admin@cardnest.com');
+                    setAuthPassword('admin');
+                    setAuthMode('login');
+                    setAuthError(null);
+                  }}
+                  className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
                 >
-                  Premium
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRoleForSim('super_admin')}
-                  className={`p-2 rounded-lg font-bold border text-center transition-all ${selectedRoleForSim === 'super_admin' ? 'bg-white border-indigo-600 text-indigo-950 shadow-sm' : 'bg-transparent border-slate-200 text-slate-500 hover:text-slate-700'}`}
-                >
-                  Admin
+                  🔑 Chief Admin (Admin)
                 </button>
               </div>
             </div>
 
-            <form onSubmit={handleSimulatedAuth} className="flex flex-col gap-4">
+            <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
+              {authMode === 'register' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="Alex Rivera"
+                    value={authFullName}
+                    onChange={(e) => setAuthFullName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Email address</label>
                 <input 
@@ -821,7 +898,7 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
                   placeholder="alex.rivera@designco.io"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
                 />
               </div>
 
@@ -833,24 +910,32 @@ export default function LandingPage({ onLogin, onSelectCard }: LandingPageProps)
                   placeholder="••••••••"
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
                 />
               </div>
 
               <button 
                 type="submit"
                 id="btn-auth-submit"
-                className="w-full bg-slate-950 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 cursor-pointer"
+                disabled={authLoading}
+                className={`w-full bg-slate-950 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Simulate Credentials
+                {authLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Processing...
+                  </>
+                ) : (
+                  authMode === 'login' ? 'Log In' : 'Create Account'
+                )}
               </button>
             </form>
 
             <div className="mt-6 text-center text-xs text-slate-500">
               {authMode === 'login' ? (
-                <span>Don't have an account? <button onClick={() => setAuthMode('register')} className="font-bold text-indigo-600 hover:underline">Sign up</button></span>
+                <span>Don't have an account? <button onClick={() => { setAuthMode('register'); setAuthError(null); }} className="font-bold text-indigo-600 hover:underline">Sign up</button></span>
               ) : (
-                <span>Already have an account? <button onClick={() => setAuthMode('login')} className="font-bold text-indigo-600 hover:underline">Log in</button></span>
+                <span>Already have an account? <button onClick={() => { setAuthMode('login'); setAuthError(null); }} className="font-bold text-indigo-600 hover:underline">Log in</button></span>
               )}
             </div>
           </motion.div>
