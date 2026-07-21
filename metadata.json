@@ -1,0 +1,6 @@
+{
+  "name": "CardNest",
+  "description": "Premium SaaS Digital Business Card Platform with a real-time live builder, fully customizable themes, interactive components, QR code generators, and advanced analytics dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
