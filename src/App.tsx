@@ -284,53 +284,7 @@ export default function App() {
           }
         }
         
-        // Auto-heal local user directory from cards fetched from Supabase
-        const rawUsers = localStorage.getItem('cardnest_local_users');
-        let currentLocalUsers: any[] = [];
-        if (rawUsers) {
-          try { currentLocalUsers = JSON.parse(rawUsers); } catch (e) {}
-        }
-        if (!Array.isArray(currentLocalUsers)) currentLocalUsers = [];
-        
-        const finalCards = fetched && fetched.length > 0 ? fetched : (localCards && localCards.length > 0 ? localCards : []);
-        if (finalCards.length > 0) {
-          let updatedUsers = [...currentLocalUsers];
-          let updatedNeeded = false;
-          
-          for (const card of finalCards) {
-            const cardEmail = card.contact?.email || '';
-            const cardName = `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim() || 'Anonymous User';
-            const cardUserId = card.userId;
-            
-            // Check if user already exists in local list
-            const exists = updatedUsers.some(u => 
-              u.id === cardUserId || 
-              (cardEmail && u.email?.toLowerCase() === cardEmail.toLowerCase())
-            );
-            
-            if (!exists && cardUserId && cardUserId !== 'user-001' && cardUserId !== 'user-002' && cardUserId !== 'user-admin') {
-              updatedUsers.push({
-                id: cardUserId,
-                email: cardEmail || `${cardUserId}@cardnest.com`,
-                fullName: cardName,
-                role: 'premium_user',
-                isVerified: true,
-                subscription: {
-                  plan: 'Premium',
-                  status: 'active',
-                  expiresAt: '2029-12-31',
-                  price: 19
-                },
-                joinedAt: card.createdAt || new Date().toISOString()
-              });
-              updatedNeeded = true;
-            }
-          }
-          
-          if (updatedNeeded) {
-            localStorage.setItem('cardnest_local_users', JSON.stringify(updatedUsers));
-          }
-        }
+
 
         setDbError(null);
       } catch (err: any) {
@@ -413,44 +367,20 @@ export default function App() {
   const onRealLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (isSupabaseConfigured) {
       try {
-        let authResult = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
-        // If sign in fails on live Supabase, and it is a demo account, let's automatically sign up the user!
-        if (authResult.error && (email === 'admin@cardnest.com' || email === 'alex.rivera@designco.io')) {
-          console.log(`Auto-onboarding live demo user "${email}" into your connected Supabase project...`);
-          const signUpResult = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                fullName: email === 'admin@cardnest.com' ? 'Chief Admin' : 'Alex Rivera',
-                full_name: email === 'admin@cardnest.com' ? 'Chief Admin' : 'Alex Rivera'
-              }
-            }
-          });
-          
-          if (!signUpResult.error) {
-            // Re-attempt sign in
-            authResult = await supabase.auth.signInWithPassword({
-              email,
-              password
-            });
-          }
-        }
+        if (error) throw error;
         
-        if (authResult.error) throw authResult.error;
-        
-        const data = authResult.data;
         if (data.user) {
           const sbUser = data.user;
           const mappedUser: User = {
             id: sbUser.id,
             email: sbUser.email || '',
             fullName: sbUser.user_metadata?.fullName || sbUser.user_metadata?.full_name || 'New User',
-            role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+            role: (sbUser.email === 'admin@cardnest.com' || sbUser.user_metadata?.role === 'super_admin' || sbUser.user_metadata?.role === 'admin') ? 'super_admin' : 'premium_user',
             subscription: {
               plan: 'Premium',
               status: 'active',
@@ -470,43 +400,7 @@ export default function App() {
         }
         return { success: false, error: 'User login session not found.' };
       } catch (err: any) {
-        const errorMsg = err.message || 'Login failed.';
-        const isEmailConfirmError = errorMsg.toLowerCase().includes('confirm') || 
-                                    errorMsg.toLowerCase().includes('verify') || 
-                                    errorMsg.toLowerCase().includes('verification') ||
-                                    errorMsg.toLowerCase().includes('not confirmed') ||
-                                    errorMsg.toLowerCase().includes('unconfirmed');
-                                    
-        if (isEmailConfirmError) {
-          console.warn("Supabase email confirmation is required. Falling back to sandbox mode for:", email);
-          
-          // Generate/retrieve local fallback user so they are not locked out!
-          const mappedUser: User = {
-            id: email === 'admin@cardnest.com' ? 'user-admin' : 'user-demo-' + Math.random().toString(36).substring(2, 11),
-            email: email,
-            fullName: email === 'admin@cardnest.com' ? 'Chief Admin' : 'Demo User',
-            role: email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
-            subscription: {
-              plan: 'Premium',
-              status: 'active',
-              expiresAt: '2029-12-31',
-              price: 19
-            },
-            joinedAt: new Date().toISOString()
-          };
-          
-          setCurrentUser(mappedUser);
-          localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
-          setAuthWarning("Your email address is unconfirmed in Supabase. We logged you in via sandbox fallback. Permanent fix: Go to Supabase -> Auth -> Providers -> Email, and toggle OFF 'Confirm email'.");
-          
-          if (mappedUser.role === 'super_admin') {
-            setCurrentView('admin');
-          } else {
-            setCurrentView('dashboard');
-          }
-          return { success: true };
-        }
-        return { success: false, error: errorMsg };
+        return { success: false, error: err.message || 'Login failed.' };
       }
     } else {
       // LocalStorage Mode
