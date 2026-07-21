@@ -23,6 +23,7 @@ export const mockUsers: User[] = [
     email: 'alex.rivera@designco.io',
     fullName: 'Alex Rivera',
     role: 'premium_user',
+    isVerified: true,
     subscription: {
       plan: 'Premium',
       status: 'active',
@@ -37,6 +38,7 @@ export const mockUsers: User[] = [
     email: 'dr.sarah.chen@medcare.org',
     fullName: 'Dr. Sarah Chen',
     role: 'premium_user',
+    isVerified: true,
     subscription: {
       plan: 'Premium',
       status: 'active',
@@ -51,6 +53,7 @@ export const mockUsers: User[] = [
     email: 'admin@cardnest.com',
     fullName: 'Chief Admin',
     role: 'super_admin',
+    isVerified: true,
     subscription: {
       plan: 'Enterprise',
       status: 'active',
@@ -65,6 +68,7 @@ export const mockUsers: User[] = [
     email: 'marcus.vance@gmail.com',
     fullName: 'Marcus Vance',
     role: 'free_user',
+    isVerified: true,
     subscription: {
       plan: 'Free',
       status: 'active',
