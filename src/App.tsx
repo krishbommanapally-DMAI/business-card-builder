@@ -35,6 +35,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [dbLoading, setDbLoading] = useState<boolean>(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [publicCardError, setPublicCardError] = useState<string | null>(null);
   
   // Specific card focuses
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -307,6 +308,7 @@ export default function App() {
     async function fetchPublicCard() {
       if (!isSupabaseConfigured || !activeCardSlug) return;
       
+      setPublicCardError(null);
       try {
         const fetchedCard = await dbFetchCardBySlug(activeCardSlug);
         if (fetchedCard) {
@@ -316,9 +318,12 @@ export default function App() {
             localStorage.setItem('cardnest_local_cards', JSON.stringify(updated));
             return updated;
           });
+        } else {
+          setPublicCardError(`Card not found. No business card with slug "${activeCardSlug}" exists in the database.`);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error(`Failed to load target card "${activeCardSlug}" directly:`, err);
+        setPublicCardError(err.message || String(err));
       }
     }
     
@@ -683,6 +688,7 @@ export default function App() {
           card={activePublicCard}
           isLoading={dbLoading}
           isVerified={isActivePublicCardOwnerVerified}
+          fetchError={publicCardError}
           onBackToDashboard={() => {
             if (currentUser) {
               if (currentUser.role === 'super_admin') {
