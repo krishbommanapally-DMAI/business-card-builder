@@ -30,56 +30,84 @@ export default function App() {
   // Initialize demo accounts in localStorage if not exists (for seamless local sandbox auth)
   useEffect(() => {
     const existing = localStorage.getItem('cardnest_local_users');
-    if (!existing) {
-      const initialUsers = [
-        {
-          id: 'user-001',
-          email: 'alex.rivera@designco.io',
-          password: 'password123',
-          fullName: 'Alex Rivera',
-          role: 'premium_user',
-          subscription: {
-            plan: 'Premium',
-            status: 'active',
-            expiresAt: '2029-12-31',
-            price: 19
-          },
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          joinedAt: '2026-03-12'
-        },
-        {
-          id: 'user-002',
-          email: 'dr.sarah.chen@medcare.org',
-          password: 'password123',
-          fullName: 'Dr. Sarah Chen',
-          role: 'premium_user',
-          subscription: {
-            plan: 'Premium',
-            status: 'active',
-            expiresAt: '2026-12-15',
-            price: 19
-          },
-          avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
-          joinedAt: '2026-05-01'
-        },
-        {
-          id: 'user-admin',
-          email: 'admin@cardnest.com',
-          password: 'admin',
-          fullName: 'Chief Admin',
-          role: 'super_admin',
-          subscription: {
-            plan: 'Enterprise',
-            status: 'active',
-            expiresAt: '2099-12-31',
-            price: 0
-          },
-          avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-          joinedAt: '2026-01-01'
-        }
-      ];
-      localStorage.setItem('cardnest_local_users', JSON.stringify(initialUsers));
+    let usersList = existing ? JSON.parse(existing) : [];
+    
+    // Check if the required Admin user exists with correct password, or seed it
+    const adminIndex = usersList.findIndex((u: any) => u.email.toLowerCase() === 'admin@cardnest.com' || (u.username && u.username.toLowerCase() === 'admin'));
+    const adminUser = {
+      id: 'user-admin',
+      email: 'admin@cardnest.com',
+      username: 'Admin',
+      password: 'Krish2611',
+      fullName: 'Chief Admin',
+      role: 'super_admin' as const,
+      isVerified: true,
+      subscription: {
+        plan: 'Enterprise' as const,
+        status: 'active' as const,
+        expiresAt: '2099-12-31',
+        price: 0
+      },
+      avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+      joinedAt: '2026-01-01'
+    };
+
+    if (adminIndex >= 0) {
+      usersList[adminIndex].password = 'Krish2611';
+      usersList[adminIndex].email = 'admin@cardnest.com';
+      usersList[adminIndex].username = 'Admin';
+      usersList[adminIndex].role = 'super_admin';
+      usersList[adminIndex].isVerified = true;
+    } else {
+      usersList.push(adminUser);
     }
+
+    // Also verify that preseeded ones have isVerified: true
+    const alexIndex = usersList.findIndex((u: any) => u.email === 'alex.rivera@designco.io');
+    if (alexIndex >= 0) {
+      usersList[alexIndex].isVerified = true;
+    } else if (!existing) {
+      usersList.push({
+        id: 'user-001',
+        email: 'alex.rivera@designco.io',
+        password: 'password123',
+        fullName: 'Alex Rivera',
+        role: 'premium_user',
+        isVerified: true,
+        subscription: {
+          plan: 'Premium',
+          status: 'active',
+          expiresAt: '2029-12-31',
+          price: 19
+        },
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        joinedAt: '2026-03-12'
+      });
+    }
+
+    const sarahIndex = usersList.findIndex((u: any) => u.email === 'dr.sarah.chen@medcare.org');
+    if (sarahIndex >= 0) {
+      usersList[sarahIndex].isVerified = true;
+    } else if (!existing) {
+      usersList.push({
+        id: 'user-002',
+        email: 'dr.sarah.chen@medcare.org',
+        password: 'password123',
+        fullName: 'Dr. Sarah Chen',
+        role: 'premium_user',
+        isVerified: true,
+        subscription: {
+          plan: 'Premium',
+          status: 'active',
+          expiresAt: '2026-12-15',
+          price: 19
+        },
+        avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
+        joinedAt: '2026-05-01'
+      });
+    }
+
+    localStorage.setItem('cardnest_local_users', JSON.stringify(usersList));
   }, []);
 
   // Restore session on mount
@@ -221,7 +249,10 @@ export default function App() {
       // LocalStorage Mode
       const localUsersRaw = localStorage.getItem('cardnest_local_users');
       const users = localUsersRaw ? JSON.parse(localUsersRaw) : [];
-      const matched = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+      const matched = users.find((u: any) => 
+        (u.email.toLowerCase() === email.toLowerCase() || (u.username && u.username.toLowerCase() === email.toLowerCase())) && 
+        u.password === password
+      );
       
       if (matched) {
         const { password: _, ...userWithoutPassword } = matched;
@@ -234,7 +265,7 @@ export default function App() {
         }
         return { success: true };
       } else {
-        return { success: false, error: 'Invalid email or password. Verify details and try again.' };
+        return { success: false, error: 'Invalid email/username or password. Verify details and try again.' };
       }
     }
   };
@@ -262,6 +293,7 @@ export default function App() {
             email: sbUser.email || '',
             fullName: fullName,
             role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+            isVerified: sbUser.email === 'admin@cardnest.com',
             subscription: {
               plan: 'Premium',
               status: 'active',
@@ -284,22 +316,26 @@ export default function App() {
       const localUsersRaw = localStorage.getItem('cardnest_local_users');
       const users = localUsersRaw ? JSON.parse(localUsersRaw) : [];
       
-      if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase())) {
-        return { success: false, error: 'This email is already registered.' };
+      if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase() || (u.username && u.username.toLowerCase() === email.toLowerCase()))) {
+        return { success: false, error: 'This email or username is already registered.' };
       }
       
       // Determine if they match one of our seeded mock card user IDs to let them inherit the mock card data
       let userId = `user-${Math.random().toString(36).substr(2, 9)}`;
       let avatarUrl = undefined;
+      let isVerified = false;
       if (email.toLowerCase() === 'alex.rivera@designco.io') {
         userId = 'user-001';
         avatarUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+        isVerified = true;
       } else if (email.toLowerCase() === 'dr.sarah.chen@medcare.org') {
         userId = 'user-002';
         avatarUrl = 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80';
-      } else if (email.toLowerCase() === 'admin@cardnest.com') {
+        isVerified = true;
+      } else if (email.toLowerCase() === 'admin@cardnest.com' || email.toLowerCase() === 'admin') {
         userId = 'user-admin';
         avatarUrl = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80';
+        isVerified = true;
       }
 
       const newUser = {
@@ -307,12 +343,13 @@ export default function App() {
         email: email,
         password: password,
         fullName: fullName,
-        role: email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+        role: (email === 'admin@cardnest.com' || email.toLowerCase() === 'admin') ? 'super_admin' : 'premium_user',
+        isVerified: isVerified,
         subscription: {
-          plan: email === 'admin@cardnest.com' ? 'Enterprise' : 'Premium',
+          plan: (email === 'admin@cardnest.com' || email.toLowerCase() === 'admin') ? 'Enterprise' : 'Premium',
           status: 'active',
-          expiresAt: email === 'admin@cardnest.com' ? '2099-12-31' : '2029-12-31',
-          price: email === 'admin@cardnest.com' ? 0 : 19
+          expiresAt: (email === 'admin@cardnest.com' || email.toLowerCase() === 'admin') ? '2099-12-31' : '2029-12-31',
+          price: (email === 'admin@cardnest.com' || email.toLowerCase() === 'admin') ? 0 : 19
         },
         avatarUrl,
         joinedAt: new Date().toISOString()
@@ -407,6 +444,17 @@ export default function App() {
   const activeBuilderCard = cards.find(c => c.id === activeCardId);
   const activePublicCard = cards.find(c => c.slug === activeCardSlug);
 
+  // Check if owner is verified
+  let isActivePublicCardOwnerVerified = true;
+  if (activePublicCard) {
+    const localUsersRaw = localStorage.getItem('cardnest_local_users');
+    const localUsers = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+    const cardOwner = localUsers.find((u: any) => u.id === activePublicCard.userId);
+    if (cardOwner) {
+      isActivePublicCardOwnerVerified = cardOwner.isVerified !== false;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       
@@ -453,6 +501,7 @@ export default function App() {
       {currentView === 'public' && activePublicCard && (
         <PublicCardView 
           card={activePublicCard}
+          isVerified={isActivePublicCardOwnerVerified}
           onBackToDashboard={() => {
             if (currentUser) {
               if (currentUser.role === 'super_admin') {
