@@ -18,9 +18,10 @@ interface PublicCardViewProps {
   isVerified?: boolean;
   isLoading?: boolean;
   onBackToDashboard?: () => void; // Optional button back to panels
+  fetchError?: string | null; // Added detailed error/diagnostics message
 }
 
-export default function PublicCardView({ card, isVerified, isLoading, onBackToDashboard }: PublicCardViewProps) {
+export default function PublicCardView({ card, isVerified, isLoading, onBackToDashboard, fetchError }: PublicCardViewProps) {
   const [activeLightbox, setActiveLightbox] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [bookingForm, setBookingForm] = useState({ name: '', email: '', note: '' });
@@ -49,7 +50,7 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
         {/* Ambient lighting */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-72 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl relative overflow-hidden z-10">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl relative overflow-hidden z-10">
           <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <ShieldAlert size={32} />
           </div>
@@ -58,6 +59,22 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
           <p className="text-slate-400 text-sm leading-relaxed mb-6">
             The digital business card you are looking for doesn't exist, is private, or has been moved. Please double check the URL and try again.
           </p>
+
+          {/* Detailed Error Diagnostic Panel */}
+          {fetchError && (
+            <div className="mb-6 p-4 bg-rose-950/70 border border-rose-500/20 text-left rounded-2xl text-xs text-rose-200 font-mono">
+              <p className="font-bold mb-1 text-rose-400 flex items-center gap-1">
+                <AlertCircle size={14} /> Diagnostic Error:
+              </p>
+              <p className="leading-relaxed text-[11px] whitespace-pre-wrap text-rose-300/90 break-words mb-2">
+                {fetchError}
+              </p>
+              <div className="h-px bg-slate-800 my-2"></div>
+              <p className="text-[10px] text-slate-400 leading-normal">
+                💡 <strong>Troubleshooting:</strong> If the card is in your database, make sure its "slug" matches exactly (case-insensitively) and that your database schema/policies allow public select queries.
+              </p>
+            </div>
+          )}
           
           {onBackToDashboard && (
             <button 
