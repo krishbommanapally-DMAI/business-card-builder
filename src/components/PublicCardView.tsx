@@ -85,7 +85,7 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
             </button>
           )}
 
-          {isSupabaseConfigured && (
+          {isSupabaseConfigured ? (
             <div className="mt-6 text-left bg-slate-950/80 border border-indigo-500/20 p-4 rounded-2xl text-xs text-indigo-200 font-mono">
               <p className="font-bold mb-1 text-indigo-400">⚡ Developer Note (Supabase RLS):</p>
               <p className="mb-2 text-[11px] leading-normal text-slate-400">
@@ -97,6 +97,18 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
               <pre className="bg-slate-900 p-2.5 rounded border border-slate-800 text-[10px] overflow-x-auto text-indigo-300">
                 {`DROP POLICY IF EXISTS "Enable read access for all users" ON "public"."cards";\n\nCREATE POLICY "Enable read access for all users" \nON "public"."cards" \nFOR SELECT \nUSING (true);`}
               </pre>
+            </div>
+          ) : (
+            <div className="mt-6 text-left bg-rose-950/80 border border-rose-500/20 p-4 rounded-2xl text-xs text-rose-200 font-mono">
+              <p className="font-bold mb-1 text-rose-400 flex items-center gap-1">
+                <AlertCircle size={14} /> Database Disconnected:
+              </p>
+              <p className="mb-2 text-[11px] leading-normal text-slate-300">
+                This app is running in **Local Offline Mode** because Supabase environment variables are missing on this server.
+              </p>
+              <p className="text-[11px] leading-normal text-slate-300">
+                💡 <strong>To fix:</strong> Please configure <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_ANON_KEY</strong> in your hosting deployment (e.g., your Vercel Dashboard) to enable cloud queries.
+              </p>
             </div>
           )}
         </div>
