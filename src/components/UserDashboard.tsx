@@ -47,7 +47,7 @@ export default function UserDashboard({
 
   // Copy card link helper
   const handleCopyLink = (slug: string) => {
-    const link = `${window.location.origin}/${slug}`;
+    const link = `https://vcard-cyan.vercel.app/${slug}`;
     navigator.clipboard.writeText(link);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
@@ -274,7 +274,7 @@ export default function UserDashboard({
                         <div className="min-w-0">
                           <h4 className="font-bold text-slate-900 truncate">{card.profile.firstName} {card.profile.lastName}</h4>
                           <span className="text-xs text-slate-500 block truncate">{card.profile.designation}</span>
-                          <span className="text-[10px] text-slate-400 block font-mono">cardnest.app/{card.slug}</span>
+                          <span className="text-[10px] text-slate-400 block font-mono">vcard-cyan.vercel.app/{card.slug}</span>
                         </div>
                       </div>
 
