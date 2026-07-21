@@ -51,11 +51,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         console.error(e);
       }
     }
-    return [
-      { id: 'user-001', name: 'Alex Rivera', email: 'alex.rivera@designco.io', role: 'Premium User', cards: localCardsList.filter((c: any) => c.userId === 'user-001' || c.user_id === 'user-001').length, status: 'Active', isVerified: true },
-      { id: 'user-002', name: 'Dr. Sarah Chen', email: 'dr.sarah.chen@medcare.org', role: 'Premium User', cards: localCardsList.filter((c: any) => c.userId === 'user-002' || c.user_id === 'user-002').length, status: 'Active', isVerified: true },
-      { id: 'user-free', name: 'Marcus Vance', email: 'marcus.vance@gmail.com', role: 'Free User', cards: 0, status: 'Active', isVerified: true }
-    ];
+    return [];
   });
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
