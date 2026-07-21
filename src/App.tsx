@@ -282,6 +282,55 @@ export default function App() {
             }
           }
         }
+        
+        // Auto-heal local user directory from cards fetched from Supabase
+        const rawUsers = localStorage.getItem('cardnest_local_users');
+        let currentLocalUsers: any[] = [];
+        if (rawUsers) {
+          try { currentLocalUsers = JSON.parse(rawUsers); } catch (e) {}
+        }
+        if (!Array.isArray(currentLocalUsers)) currentLocalUsers = [];
+        
+        const finalCards = fetched && fetched.length > 0 ? fetched : (localCards && localCards.length > 0 ? localCards : []);
+        if (finalCards.length > 0) {
+          let updatedUsers = [...currentLocalUsers];
+          let updatedNeeded = false;
+          
+          for (const card of finalCards) {
+            const cardEmail = card.contact?.email || '';
+            const cardName = `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim() || 'Anonymous User';
+            const cardUserId = card.userId;
+            
+            // Check if user already exists in local list
+            const exists = updatedUsers.some(u => 
+              u.id === cardUserId || 
+              (cardEmail && u.email?.toLowerCase() === cardEmail.toLowerCase())
+            );
+            
+            if (!exists && cardUserId && cardUserId !== 'user-001' && cardUserId !== 'user-002' && cardUserId !== 'user-admin') {
+              updatedUsers.push({
+                id: cardUserId,
+                email: cardEmail || `${cardUserId}@cardnest.com`,
+                fullName: cardName,
+                role: 'premium_user',
+                isVerified: true,
+                subscription: {
+                  plan: 'Premium',
+                  status: 'active',
+                  expiresAt: '2029-12-31',
+                  price: 19
+                },
+                joinedAt: card.createdAt || new Date().toISOString()
+              });
+              updatedNeeded = true;
+            }
+          }
+          
+          if (updatedNeeded) {
+            localStorage.setItem('cardnest_local_users', JSON.stringify(updatedUsers));
+          }
+        }
+
         setDbError(null);
       } catch (err: any) {
         // Silently catch unauthenticated listing errors as guests might not have full select list access
@@ -473,6 +522,34 @@ export default function App() {
             },
             joinedAt: sbUser.created_at || new Date().toISOString()
           };
+          
+          // Sync to local user directory so Admin Dashboard can view and approve
+          let usersList = [];
+          const localUsersRaw = localStorage.getItem('cardnest_local_users');
+          if (localUsersRaw) {
+            try {
+              usersList = JSON.parse(localUsersRaw);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+          if (!Array.isArray(usersList)) {
+            usersList = [];
+          }
+          
+          if (!usersList.some((u: any) => u.email?.toLowerCase() === mappedUser.email.toLowerCase())) {
+            usersList.push({
+              id: mappedUser.id,
+              email: mappedUser.email,
+              password: password, // For administrative visual representation
+              fullName: mappedUser.fullName,
+              role: mappedUser.role,
+              isVerified: mappedUser.isVerified,
+              subscription: mappedUser.subscription,
+              joinedAt: mappedUser.joinedAt
+            });
+            localStorage.setItem('cardnest_local_users', JSON.stringify(usersList));
+          }
           
           if (mappedUser.isVerified) {
             setCurrentUser(mappedUser);
