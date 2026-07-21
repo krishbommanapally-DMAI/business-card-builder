@@ -231,8 +231,13 @@ export default function App() {
       try {
         const fetched = await dbFetchCards();
         if (fetched && fetched.length > 0) {
-          setCards(fetched);
-          localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
+          setCards(prev => {
+            const fetchedIds = new Set(fetched.map(c => c.id));
+            const localOnly = prev.filter(c => !fetchedIds.has(c.id));
+            const merged = [...fetched, ...localOnly];
+            localStorage.setItem('cardnest_local_cards', JSON.stringify(merged));
+            return merged;
+          });
         } else {
           // If database is empty, seed with initial mock data ONLY if there is an active session (authenticated user)
           const { data: { session } } = await supabase.auth.getSession();
