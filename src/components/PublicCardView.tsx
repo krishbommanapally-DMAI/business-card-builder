@@ -373,7 +373,7 @@ END:VCARD`;
           </p>
 
           <span className="text-[9px] text-slate-400 font-bold block mt-8 uppercase tracking-widest">
-            Powered by CardNest.app
+            Powered by vcard-cyan.vercel.app
           </span>
         </div>
 
