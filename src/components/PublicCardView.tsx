@@ -78,7 +78,7 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
                 To fix this, go to your **Supabase SQL Editor** and run:
               </p>
               <pre className="bg-slate-900 p-2.5 rounded border border-slate-800 text-[10px] overflow-x-auto text-indigo-300">
-                {`CREATE POLICY "Enable read access for all users" \nON "public"."cards" \nFOR SELECT \nUSING (true);`}
+                {`DROP POLICY IF EXISTS "Enable read access for all users" ON "public"."cards";\n\nCREATE POLICY "Enable read access for all users" \nON "public"."cards" \nFOR SELECT \nUSING (true);`}
               </pre>
             </div>
           )}
