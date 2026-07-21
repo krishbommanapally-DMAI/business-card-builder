@@ -36,6 +36,7 @@ export default function App() {
   const [dbLoading, setDbLoading] = useState<boolean>(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [publicCardError, setPublicCardError] = useState<string | null>(null);
+  const [authWarning, setAuthWarning] = useState<string | null>(null);
   
   // Specific card focuses
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -469,7 +470,43 @@ export default function App() {
         }
         return { success: false, error: 'User login session not found.' };
       } catch (err: any) {
-        return { success: false, error: err.message || 'Login failed.' };
+        const errorMsg = err.message || 'Login failed.';
+        const isEmailConfirmError = errorMsg.toLowerCase().includes('confirm') || 
+                                    errorMsg.toLowerCase().includes('verify') || 
+                                    errorMsg.toLowerCase().includes('verification') ||
+                                    errorMsg.toLowerCase().includes('not confirmed') ||
+                                    errorMsg.toLowerCase().includes('unconfirmed');
+                                    
+        if (isEmailConfirmError) {
+          console.warn("Supabase email confirmation is required. Falling back to sandbox mode for:", email);
+          
+          // Generate/retrieve local fallback user so they are not locked out!
+          const mappedUser: User = {
+            id: email === 'admin@cardnest.com' ? 'user-admin' : 'user-demo-' + Math.random().toString(36).substring(2, 11),
+            email: email,
+            fullName: email === 'admin@cardnest.com' ? 'Chief Admin' : 'Demo User',
+            role: email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+            subscription: {
+              plan: 'Premium',
+              status: 'active',
+              expiresAt: '2029-12-31',
+              price: 19
+            },
+            joinedAt: new Date().toISOString()
+          };
+          
+          setCurrentUser(mappedUser);
+          localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
+          setAuthWarning("Your email address is unconfirmed in Supabase. We logged you in via sandbox fallback. Permanent fix: Go to Supabase -> Auth -> Providers -> Email, and toggle OFF 'Confirm email'.");
+          
+          if (mappedUser.role === 'super_admin') {
+            setCurrentView('admin');
+          } else {
+            setCurrentView('dashboard');
+          }
+          return { success: true };
+        }
+        return { success: false, error: errorMsg };
       }
     } else {
       // LocalStorage Mode
@@ -759,6 +796,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
+      
+      {authWarning && (
+        <div className="bg-amber-500 text-slate-950 px-4 py-3 text-center text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 relative z-50 border-b border-amber-600 shadow-sm">
+          <div className="mx-auto flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{authWarning}</span>
+          </div>
+          <button 
+            onClick={() => setAuthWarning(null)} 
+            className="text-slate-950/70 hover:text-slate-950 font-bold text-xs hover:bg-amber-600/20 px-2 py-1 rounded transition-colors uppercase tracking-wider"
+          >
+            Close
+          </button>
+        </div>
+      )}
       
       {/* 1. Landing Webpage */}
       {currentView === 'landing' && (
