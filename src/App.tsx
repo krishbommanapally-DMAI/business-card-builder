@@ -229,8 +229,6 @@ export default function App() {
       
       setDbLoading(true);
       try {
-        const fetched = await dbFetchCards() || [];
-        
         // Retrieve current local cards from localStorage
         const localCardsRaw = localStorage.getItem('cardnest_local_cards');
         let localCards: DigitalCard[] = [];
@@ -241,38 +239,35 @@ export default function App() {
             console.error('Error parsing local cards:', e);
           }
         }
+
+        const fetched = await dbFetchCards() || [];
         
-        if (fetched.length > 0) {
-          const fetchedIds = new Set(fetched.map(c => c.id));
-          const localOnly = localCards.filter(c => !fetchedIds.has(c.id));
-          
-          if (localOnly.length > 0) {
-            console.log(`Syncing ${localOnly.length} local-only cards to Supabase...`);
-            // Sync each unsynced local card to Supabase database
-            for (const card of localOnly) {
-              try {
-                await dbSaveCard(card);
-              } catch (saveErr) {
-                console.error(`Auto-sync failed for card ${card.id}:`, saveErr);
-              }
+        if (localCards.length > 0) {
+          console.log(`Syncing/updating ${localCards.length} local cards in Supabase database...`);
+          // Sync all local cards to database to ensure full schema alignment
+          for (const card of localCards) {
+            try {
+              await dbSaveCard(card);
+            } catch (saveErr) {
+              console.error(`Auto-sync failed for card ${card.id}:`, saveErr);
             }
-            // Re-fetch the newly updated complete cards list from Supabase
-            const updatedFetched = await dbFetchCards();
-            if (updatedFetched && updatedFetched.length > 0) {
-              setCards(updatedFetched);
-              localStorage.setItem('cardnest_local_cards', JSON.stringify(updatedFetched));
-            }
-          } else {
-            setCards(fetched);
-            localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
           }
+          
+          // Re-fetch clean populated data from Supabase
+          const updatedFetched = await dbFetchCards();
+          if (updatedFetched && updatedFetched.length > 0) {
+            setCards(updatedFetched);
+            localStorage.setItem('cardnest_local_cards', JSON.stringify(updatedFetched));
+          }
+        } else if (fetched.length > 0) {
+          setCards(fetched);
+          localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
         } else {
-          // If database is empty, seed with existing local cards (if any) or default mock data
+          // If both database and local storage are empty, seed with default mock data if authenticated
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
-            console.log('Seeding Supabase database with default/local digital business cards...');
-            const cardsToSave = localCards.length > 0 ? localCards : mockCards;
-            for (const card of cardsToSave) {
+            console.log('Seeding Supabase database with default digital business cards...');
+            for (const card of mockCards) {
               try {
                 await dbSaveCard(card);
               } catch (saveErr) {
@@ -289,7 +284,7 @@ export default function App() {
         setDbError(null);
       } catch (err: any) {
         // Silently catch unauthenticated listing errors as guests might not have full select list access
-        console.warn('Listing all cards from Supabase failed or was restricted:', err.message);
+        console.warn('Syncing/listing cards from Supabase failed or was restricted:', err.message);
       } finally {
         setDbLoading(false);
       }
