@@ -11,7 +11,7 @@ import CardBuilder from './components/CardBuilder';
 import PublicCardView from './components/PublicCardView';
 import { User, DigitalCard } from './types';
 import { mockUsers, mockCards } from './data/mockData';
-import { isSupabaseConfigured, dbFetchCards, dbSaveCard, dbDeleteCard } from './lib/supabase';
+import { isSupabaseConfigured, dbFetchCards, dbSaveCard, dbDeleteCard, supabase } from './lib/supabase';
 
 export default function App() {
   // Navigation View State: 'landing' | 'dashboard' | 'admin' | 'builder' | 'public'
@@ -26,6 +26,113 @@ export default function App() {
   // Specific card focuses
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [activeCardSlug, setActiveCardSlug] = useState<string | null>(null);
+
+  // Initialize demo accounts in localStorage if not exists (for seamless local sandbox auth)
+  useEffect(() => {
+    const existing = localStorage.getItem('cardnest_local_users');
+    if (!existing) {
+      const initialUsers = [
+        {
+          id: 'user-001',
+          email: 'alex.rivera@designco.io',
+          password: 'password123',
+          fullName: 'Alex Rivera',
+          role: 'premium_user',
+          subscription: {
+            plan: 'Premium',
+            status: 'active',
+            expiresAt: '2029-12-31',
+            price: 19
+          },
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          joinedAt: '2026-03-12'
+        },
+        {
+          id: 'user-002',
+          email: 'dr.sarah.chen@medcare.org',
+          password: 'password123',
+          fullName: 'Dr. Sarah Chen',
+          role: 'premium_user',
+          subscription: {
+            plan: 'Premium',
+            status: 'active',
+            expiresAt: '2026-12-15',
+            price: 19
+          },
+          avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
+          joinedAt: '2026-05-01'
+        },
+        {
+          id: 'user-admin',
+          email: 'admin@cardnest.com',
+          password: 'admin',
+          fullName: 'Chief Admin',
+          role: 'super_admin',
+          subscription: {
+            plan: 'Enterprise',
+            status: 'active',
+            expiresAt: '2099-12-31',
+            price: 0
+          },
+          avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+          joinedAt: '2026-01-01'
+        }
+      ];
+      localStorage.setItem('cardnest_local_users', JSON.stringify(initialUsers));
+    }
+  }, []);
+
+  // Restore session on mount
+  useEffect(() => {
+    async function checkSession() {
+      if (isSupabaseConfigured) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const sbUser = session.user;
+            const mappedUser: User = {
+              id: sbUser.id,
+              email: sbUser.email || '',
+              fullName: sbUser.user_metadata?.fullName || sbUser.user_metadata?.full_name || 'New User',
+              role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+              subscription: {
+                plan: 'Premium',
+                status: 'active',
+                expiresAt: '2029-12-31',
+                price: 19
+              },
+              joinedAt: sbUser.created_at || new Date().toISOString()
+            };
+            setCurrentUser(mappedUser);
+            if (mappedUser.role === 'super_admin') {
+              setCurrentView('admin');
+            } else {
+              setCurrentView('dashboard');
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching Supabase session:', err);
+        }
+      } else {
+        const savedUser = localStorage.getItem('cardnest_current_user');
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setCurrentUser(parsedUser);
+            if (parsedUser.role === 'super_admin') {
+              setCurrentView('admin');
+            } else {
+              setCurrentView('dashboard');
+            }
+          } catch (e) {
+            console.error('Error loading saved local user:', e);
+          }
+        }
+      }
+    }
+
+    checkSession();
+  }, []);
 
   // Sync Supabase cards on initialization
   useEffect(() => {
@@ -72,21 +179,166 @@ export default function App() {
     }
   }, [cards]);
 
-  // Handle mock login authentication
-  const handleLogin = (role: 'free_user' | 'premium_user' | 'super_admin') => {
-    const matchedUser = mockUsers.find(u => u.role === role);
-    if (matchedUser) {
-      setCurrentUser(matchedUser);
-      if (role === 'super_admin') {
-        setCurrentView('admin');
+  // Handle real login authentication (Supabase or local storage fallback)
+  const onRealLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        if (error) throw error;
+        
+        if (data.user) {
+          const sbUser = data.user;
+          const mappedUser: User = {
+            id: sbUser.id,
+            email: sbUser.email || '',
+            fullName: sbUser.user_metadata?.fullName || sbUser.user_metadata?.full_name || 'New User',
+            role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+            subscription: {
+              plan: 'Premium',
+              status: 'active',
+              expiresAt: '2029-12-31',
+              price: 19
+            },
+            joinedAt: sbUser.created_at || new Date().toISOString()
+          };
+          setCurrentUser(mappedUser);
+          localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
+          if (mappedUser.role === 'super_admin') {
+            setCurrentView('admin');
+          } else {
+            setCurrentView('dashboard');
+          }
+          return { success: true };
+        }
+        return { success: false, error: 'User login session not found.' };
+      } catch (err: any) {
+        return { success: false, error: err.message || 'Login failed.' };
+      }
+    } else {
+      // LocalStorage Mode
+      const localUsersRaw = localStorage.getItem('cardnest_local_users');
+      const users = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+      const matched = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+      
+      if (matched) {
+        const { password: _, ...userWithoutPassword } = matched;
+        setCurrentUser(userWithoutPassword);
+        localStorage.setItem('cardnest_current_user', JSON.stringify(userWithoutPassword));
+        if (matched.role === 'super_admin') {
+          setCurrentView('admin');
+        } else {
+          setCurrentView('dashboard');
+        }
+        return { success: true };
       } else {
-        setCurrentView('dashboard');
+        return { success: false, error: 'Invalid email or password. Verify details and try again.' };
       }
     }
   };
 
+  // Handle real registration (Supabase or local storage fallback)
+  const onRealRegister = async (email: string, password: string, fullName: string): Promise<{ success: boolean; error?: string }> => {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              fullName: fullName,
+              full_name: fullName
+            }
+          }
+        });
+        if (error) throw error;
+        
+        if (data.user) {
+          const sbUser = data.user;
+          const mappedUser: User = {
+            id: sbUser.id,
+            email: sbUser.email || '',
+            fullName: fullName,
+            role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+            subscription: {
+              plan: 'Premium',
+              status: 'active',
+              expiresAt: '2029-12-31',
+              price: 19
+            },
+            joinedAt: sbUser.created_at || new Date().toISOString()
+          };
+          setCurrentUser(mappedUser);
+          localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
+          setCurrentView('dashboard');
+          return { success: true };
+        }
+        return { success: false, error: 'Registration succeeded, waiting for user session.' };
+      } catch (err: any) {
+        return { success: false, error: err.message || 'Registration failed.' };
+      }
+    } else {
+      // LocalStorage Mode
+      const localUsersRaw = localStorage.getItem('cardnest_local_users');
+      const users = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+      
+      if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase())) {
+        return { success: false, error: 'This email is already registered.' };
+      }
+      
+      // Determine if they match one of our seeded mock card user IDs to let them inherit the mock card data
+      let userId = `user-${Math.random().toString(36).substr(2, 9)}`;
+      let avatarUrl = undefined;
+      if (email.toLowerCase() === 'alex.rivera@designco.io') {
+        userId = 'user-001';
+        avatarUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+      } else if (email.toLowerCase() === 'dr.sarah.chen@medcare.org') {
+        userId = 'user-002';
+        avatarUrl = 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80';
+      } else if (email.toLowerCase() === 'admin@cardnest.com') {
+        userId = 'user-admin';
+        avatarUrl = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80';
+      }
+
+      const newUser = {
+        id: userId,
+        email: email,
+        password: password,
+        fullName: fullName,
+        role: email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+        subscription: {
+          plan: email === 'admin@cardnest.com' ? 'Enterprise' : 'Premium',
+          status: 'active',
+          expiresAt: email === 'admin@cardnest.com' ? '2099-12-31' : '2029-12-31',
+          price: email === 'admin@cardnest.com' ? 0 : 19
+        },
+        avatarUrl,
+        joinedAt: new Date().toISOString()
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('cardnest_local_users', JSON.stringify(users));
+      
+      const { password: _, ...userWithoutPassword } = newUser;
+      setCurrentUser(userWithoutPassword);
+      localStorage.setItem('cardnest_current_user', JSON.stringify(userWithoutPassword));
+      setCurrentView('dashboard');
+      return { success: true };
+    }
+  };
+
   // Logout routine
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error('Error signing out of Supabase:', err);
+      }
+    }
+    localStorage.removeItem('cardnest_current_user');
     setCurrentUser(null);
     setCurrentView('landing');
     setActiveCardId(null);
@@ -161,8 +413,10 @@ export default function App() {
       {/* 1. Landing Webpage */}
       {currentView === 'landing' && (
         <LandingPage 
-          onLogin={handleLogin} 
-          onSelectCard={handleViewCard} 
+          onRealLogin={onRealLogin} 
+          onRealRegister={onRealRegister} 
+          onSelectCard={handleViewCard}
+          isSupabaseConnected={isSupabaseConfigured}
         />
       )}
 
