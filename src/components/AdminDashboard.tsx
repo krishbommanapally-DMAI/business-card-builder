@@ -19,28 +19,41 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'plans' | 'cms'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [userList, setUserList] = useState<any[]>(() => {
+    // Dynamically retrieve cards to calculate active cards per user
+    const rawCards = localStorage.getItem('cardnest_local_cards');
+    let localCardsList: any[] = [];
+    if (rawCards) {
+      try {
+        localCardsList = JSON.parse(rawCards);
+      } catch (e) {}
+    }
+    if (!Array.isArray(localCardsList)) localCardsList = [];
+
     const raw = localStorage.getItem('cardnest_local_users');
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((u: any) => ({
-            id: u.id,
-            name: u.fullName || u.name || 'Anonymous User',
-            email: u.email,
-            role: u.role === 'super_admin' ? 'Super Admin' : 'Premium User',
-            cards: u.id === 'user-001' ? 2 : u.id === 'user-002' ? 1 : 0,
-            status: u.isVerified === false ? 'Pending Approval' : (u.subscription?.status === 'suspended' ? 'Suspended' : 'Active'),
-            isVerified: u.isVerified !== false
-          }));
+          return parsed.map((u: any) => {
+            const userCardCount = localCardsList.filter((c: any) => c.userId === u.id || c.user_id === u.id).length;
+            return {
+              id: u.id,
+              name: u.fullName || u.name || 'Anonymous User',
+              email: u.email,
+              role: u.role === 'super_admin' ? 'Super Admin' : 'Premium User',
+              cards: userCardCount,
+              status: u.isVerified === false ? 'Pending Approval' : (u.subscription?.status === 'suspended' ? 'Suspended' : 'Active'),
+              isVerified: u.isVerified !== false
+            };
+          });
         }
       } catch (e) {
         console.error(e);
       }
     }
     return [
-      { id: 'user-001', name: 'Alex Rivera', email: 'alex.rivera@designco.io', role: 'Premium User', cards: 2, status: 'Active', isVerified: true },
-      { id: 'user-002', name: 'Dr. Sarah Chen', email: 'dr.sarah.chen@medcare.org', role: 'Premium User', cards: 1, status: 'Active', isVerified: true },
+      { id: 'user-001', name: 'Alex Rivera', email: 'alex.rivera@designco.io', role: 'Premium User', cards: localCardsList.filter((c: any) => c.userId === 'user-001' || c.user_id === 'user-001').length, status: 'Active', isVerified: true },
+      { id: 'user-002', name: 'Dr. Sarah Chen', email: 'dr.sarah.chen@medcare.org', role: 'Premium User', cards: localCardsList.filter((c: any) => c.userId === 'user-002' || c.user_id === 'user-002').length, status: 'Active', isVerified: true },
       { id: 'user-free', name: 'Marcus Vance', email: 'marcus.vance@gmail.com', role: 'Free User', cards: 0, status: 'Active', isVerified: true }
     ];
   });
