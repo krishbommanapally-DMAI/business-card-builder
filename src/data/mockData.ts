@@ -821,9 +821,18 @@ export const mockFAQs = [
   }
 ];
 
+// Helper to generate RFC-compliant UUID v4
+export const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 // Helper to compile a blank/initial card for building
 export const createInitialCard = (userId: string, slug: string): DigitalCard => ({
-  id: `card-${Math.random().toString(36).substr(2, 9)}`,
+  id: generateUUID(),
   userId,
   slug,
   templateId: 'corporate',
@@ -831,7 +840,7 @@ export const createInitialCard = (userId: string, slug: string): DigitalCard => 
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   theme: {
-    id: `theme-${Math.random().toString(36).substr(2, 9)}`,
+    id: generateUUID(),
     name: 'Custom Slate',
     primaryColor: '#1E293B',
     secondaryColor: '#3B82F6',
