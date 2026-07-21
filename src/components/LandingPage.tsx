@@ -13,7 +13,7 @@ import { subscriptionPlans, mockFAQs } from '../data/mockData';
 
 interface LandingPageProps {
   onRealLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  onRealRegister: (email: string, password: string, fullName: string) => Promise<{ success: boolean; error?: string }>;
+  onRealRegister: (email: string, password: string, fullName: string) => Promise<{ success: boolean; error?: string; pendingApproval?: boolean }>;
   onSelectCard: (slug: string) => void;
   isSupabaseConnected: boolean;
 }
@@ -29,6 +29,7 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
   const [authFullName, setAuthFullName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [regPending, setRegPending] = useState(false);
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +54,11 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
         if (!result.success) {
           setAuthError(result.error || 'Registration failed.');
         } else {
-          setShowAuthModal(false);
+          if (result.pendingApproval) {
+            setRegPending(true);
+          } else {
+            setShowAuthModal(false);
+          }
         }
       }
     } catch (err: any) {
@@ -799,145 +804,178 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
               onClick={() => {
                 setShowAuthModal(false);
                 setAuthError(null);
+                setRegPending(false);
               }}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors"
             >
               <X size={20} />
             </button>
 
-            <div className="text-center mb-6">
-              <div className="w-12 h-12 bg-slate-950 text-white font-extrabold rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
-                C
-              </div>
-              <h3 className="text-2xl font-display font-extrabold text-slate-900">
-                {authMode === 'login' ? 'Log in to CardNest' : 'Create Your Account'}
-              </h3>
-              <p className="text-slate-500 text-sm mt-1">
-                {authMode === 'login' ? 'Access your dashboard & analytics' : 'Start building premium interactive cards'}
-              </p>
-            </div>
-
-            {/* Real Connection Status Banner */}
-            <div className="mb-4 flex items-center justify-center">
-              {isSupabaseConnected ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Supabase Live Auth Active
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                  Secure Local Database Active (Sandbox)
-                </span>
-              )}
-            </div>
-
-            {/* Error Message Display */}
-            {authError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-150 text-red-700 text-xs font-semibold rounded-xl text-center">
-                ⚠️ {authError}
-              </div>
-            )}
-
-            {/* Demo Accounts Quick Fill (Highly Convenient) */}
-            <div className="mb-5 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl text-left">
-              <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                💡 Demo Quick-Fill Accounts
-              </h4>
-              <p className="text-[10px] text-slate-500 mt-0.5 mb-2.5">
-                Click a user below to prefill real credentials, then submit to verify the auth pipeline.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthEmail('alex.rivera@designco.io');
-                    setAuthPassword('password123');
-                    setAuthMode('login');
-                    setAuthError(null);
-                  }}
-                  className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
-                >
-                  👤 Alex Rivera (User)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthEmail('admin@cardnest.com');
-                    setAuthPassword('admin');
-                    setAuthMode('login');
-                    setAuthError(null);
-                  }}
-                  className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
-                >
-                  🔑 Chief Admin (Admin)
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
-              {authMode === 'register' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="Alex Rivera"
-                    value={authFullName}
-                    onChange={(e) => setAuthFullName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
-                  />
+            {regPending ? (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
+                  <CheckCircle size={36} />
                 </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email address</label>
-                <input 
-                  type="email" 
-                  required
-                  placeholder="alex.rivera@designco.io"
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
-                />
+                <h3 className="text-2xl font-display font-extrabold text-slate-900">
+                  Registration Successful!
+                </h3>
+                <p className="text-slate-600 text-sm mt-3 leading-relaxed">
+                  Your account <strong>{authEmail}</strong> has been registered and is currently awaiting administrator review and approval.
+                </p>
+                <p className="text-slate-500 text-xs mt-3 bg-slate-50 border border-slate-100 p-3 rounded-xl leading-relaxed">
+                  You will be able to log in and start customizing your contactless business card as soon as an administrator verifies your account.
+                </p>
+                <button
+                  id="btn-reg-pending-close"
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    setRegPending(false);
+                    setAuthEmail('');
+                    setAuthPassword('');
+                    setAuthFullName('');
+                  }}
+                  className="mt-6 w-full bg-slate-950 hover:bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Understood
+                </button>
               </div>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-slate-950 text-white font-extrabold rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
+                    C
+                  </div>
+                  <h3 className="text-2xl font-display font-extrabold text-slate-900">
+                    {authMode === 'login' ? 'Log in to CardNest' : 'Create Your Account'}
+                  </h3>
+                  <p className="text-slate-500 text-sm mt-1">
+                    {authMode === 'login' ? 'Access your dashboard & analytics' : 'Start building premium interactive cards'}
+                  </p>
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
-                <input 
-                  type="password" 
-                  required
-                  placeholder="••••••••"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
-                />
-              </div>
+                {/* Real Connection Status Banner */}
+                <div className="mb-4 flex items-center justify-center">
+                  {isSupabaseConnected ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold rounded-full">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Supabase Live Auth Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold rounded-full">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      Secure Local Database Active (Sandbox)
+                    </span>
+                  )}
+                </div>
 
-              <button 
-                type="submit"
-                id="btn-auth-submit"
-                disabled={authLoading}
-                className={`w-full bg-slate-950 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-              >
-                {authLoading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    Processing...
-                  </>
-                ) : (
-                  authMode === 'login' ? 'Log In' : 'Create Account'
+                {/* Error Message Display */}
+                {authError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-150 text-red-700 text-xs font-semibold rounded-xl text-center">
+                    ⚠️ {authError}
+                  </div>
                 )}
-              </button>
-            </form>
 
-            <div className="mt-6 text-center text-xs text-slate-500">
-              {authMode === 'login' ? (
-                <span>Don't have an account? <button onClick={() => { setAuthMode('register'); setAuthError(null); }} className="font-bold text-indigo-600 hover:underline">Sign up</button></span>
-              ) : (
-                <span>Already have an account? <button onClick={() => { setAuthMode('login'); setAuthError(null); }} className="font-bold text-indigo-600 hover:underline">Log in</button></span>
-              )}
-            </div>
+                {/* Demo Accounts Quick Fill (Highly Convenient) */}
+                <div className="mb-5 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl text-left">
+                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    💡 Demo Quick-Fill Accounts
+                  </h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5 mb-2.5">
+                    Click a user below to prefill real credentials, then submit to verify the auth pipeline.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthEmail('alex.rivera@designco.io');
+                        setAuthPassword('password123');
+                        setAuthMode('login');
+                        setAuthError(null);
+                      }}
+                      className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
+                    >
+                      👤 Alex Rivera (User)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthEmail('admin@cardnest.com');
+                        setAuthPassword('Krish2611');
+                        setAuthMode('login');
+                        setAuthError(null);
+                      }}
+                      className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
+                    >
+                      🔑 Chief Admin (Admin)
+                    </button>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
+                  {authMode === 'register' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="Alex Rivera"
+                        value={authFullName}
+                        onChange={(e) => setAuthFullName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Email address</label>
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="alex.rivera@designco.io"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input 
+                      type="password" 
+                      required
+                      placeholder="••••••••"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 bg-slate-50 text-slate-900 text-sm"
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    id="btn-auth-submit"
+                    disabled={authLoading}
+                    className={`w-full bg-slate-950 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg mt-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${authLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  >
+                    {authLoading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Processing...
+                      </>
+                    ) : (
+                      authMode === 'login' ? 'Log In' : 'Create Account'
+                    )}
+                  </button>
+                </form>
+
+                <div className="mt-6 text-center text-xs text-slate-500">
+                  {authMode === 'login' ? (
+                    <span>Don't have an account? <button onClick={() => { setAuthMode('register'); setAuthError(null); }} className="font-bold text-indigo-600 hover:underline">Sign up</button></span>
+                  ) : (
+                    <span>Already have an account? <button onClick={() => { setAuthMode('login'); setAuthError(null); }} className="font-bold text-indigo-600 hover:underline">Log in</button></span>
+                  )}
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       )}
