@@ -14,16 +14,47 @@ import { DigitalCard } from '../types';
 
 interface PublicCardViewProps {
   card: DigitalCard;
+  isVerified?: boolean;
   onBackToDashboard?: () => void; // Optional button back to panels
 }
 
-export default function PublicCardView({ card, onBackToDashboard }: PublicCardViewProps) {
+export default function PublicCardView({ card, isVerified, onBackToDashboard }: PublicCardViewProps) {
   const [activeLightbox, setActiveLightbox] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [bookingForm, setBookingForm] = useState({ name: '', email: '', note: '' });
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
+
+  if (isVerified === false) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white font-sans">
+        <div className="max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+          {/* Ambient light ornament */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-indigo-600/25 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <AlertCircle size={32} />
+          </div>
+          
+          <h2 className="text-2xl font-bold tracking-tight text-white mb-3">Card Awaiting Approval</h2>
+          <p className="text-slate-400 text-sm leading-relaxed mb-6">
+            This digital business card is currently awaiting administrator review and activation. Please check back again soon!
+          </p>
+          
+          {onBackToDashboard && (
+            <button 
+              id="btn-back-awaiting"
+              onClick={onBackToDashboard}
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+            >
+              ← Back to Workspace
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // Download VCard contact logic helper
   const handleDownloadVCard = () => {
