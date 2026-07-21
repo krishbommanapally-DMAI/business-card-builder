@@ -29,11 +29,23 @@ export default function App() {
 
   // Initialize demo accounts in localStorage if not exists (for seamless local sandbox auth)
   useEffect(() => {
+    let usersList = [];
     const existing = localStorage.getItem('cardnest_local_users');
-    let usersList = existing ? JSON.parse(existing) : [];
+    if (existing) {
+      try {
+        usersList = JSON.parse(existing);
+      } catch (e) {
+        console.error('Error parsing cardnest_local_users:', e);
+        usersList = [];
+      }
+    }
+    
+    if (!Array.isArray(usersList)) {
+      usersList = [];
+    }
     
     // Check if the required Admin user exists with correct password, or seed it
-    const adminIndex = usersList.findIndex((u: any) => u.email.toLowerCase() === 'admin@cardnest.com' || (u.username && u.username.toLowerCase() === 'admin'));
+    const adminIndex = usersList.findIndex((u: any) => (u.email && u.email.toLowerCase() === 'admin@cardnest.com') || (u.username && u.username.toLowerCase() === 'admin'));
     const adminUser = {
       id: 'user-admin',
       email: 'admin@cardnest.com',
@@ -247,14 +259,33 @@ export default function App() {
       }
     } else {
       // LocalStorage Mode
+      let users = [];
       const localUsersRaw = localStorage.getItem('cardnest_local_users');
-      const users = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+      if (localUsersRaw) {
+        try {
+          users = JSON.parse(localUsersRaw);
+        } catch (e) {
+          console.error('Error parsing cardnest_local_users:', e);
+          users = [];
+        }
+      }
+      
       const matched = users.find((u: any) => 
-        (u.email.toLowerCase() === email.toLowerCase() || (u.username && u.username.toLowerCase() === email.toLowerCase())) && 
+        ((u.email && u.email.toLowerCase() === email.toLowerCase()) || (u.username && u.username.toLowerCase() === email.toLowerCase())) && 
         u.password === password
       );
       
       if (matched) {
+        // Block unverified users from logging in if they are not super admin
+        if (matched.role !== 'super_admin' && matched.isVerified === false) {
+          return { success: false, error: 'Your account registration is pending administrator approval. Please try again once approved.' };
+        }
+        
+        // Also block suspended accounts
+        if (matched.subscription?.status === 'suspended') {
+          return { success: false, error: 'Your account has been suspended by an administrator. Please contact support.' };
+        }
+
         const { password: _, ...userWithoutPassword } = matched;
         setCurrentUser(userWithoutPassword);
         localStorage.setItem('cardnest_current_user', JSON.stringify(userWithoutPassword));
@@ -271,7 +302,7 @@ export default function App() {
   };
 
   // Handle real registration (Supabase or local storage fallback)
-  const onRealRegister = async (email: string, password: string, fullName: string): Promise<{ success: boolean; error?: string }> => {
+  const onRealRegister = async (email: string, password: string, fullName: string): Promise<{ success: boolean; error?: string; pendingApproval?: boolean }> => {
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.auth.signUp({
@@ -302,10 +333,15 @@ export default function App() {
             },
             joinedAt: sbUser.created_at || new Date().toISOString()
           };
-          setCurrentUser(mappedUser);
-          localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
-          setCurrentView('dashboard');
-          return { success: true };
+          
+          if (mappedUser.isVerified) {
+            setCurrentUser(mappedUser);
+            localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
+            setCurrentView('dashboard');
+            return { success: true, pendingApproval: false };
+          } else {
+            return { success: true, pendingApproval: true };
+          }
         }
         return { success: false, error: 'Registration succeeded, waiting for user session.' };
       } catch (err: any) {
@@ -313,10 +349,18 @@ export default function App() {
       }
     } else {
       // LocalStorage Mode
+      let users = [];
       const localUsersRaw = localStorage.getItem('cardnest_local_users');
-      const users = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+      if (localUsersRaw) {
+        try {
+          users = JSON.parse(localUsersRaw);
+        } catch (e) {
+          console.error('Error parsing cardnest_local_users:', e);
+          users = [];
+        }
+      }
       
-      if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase() || (u.username && u.username.toLowerCase() === email.toLowerCase()))) {
+      if (users.some((u: any) => (u.email && u.email.toLowerCase() === email.toLowerCase()) || (u.username && u.username.toLowerCase() === email.toLowerCase()))) {
         return { success: false, error: 'This email or username is already registered.' };
       }
       
@@ -358,11 +402,15 @@ export default function App() {
       users.push(newUser);
       localStorage.setItem('cardnest_local_users', JSON.stringify(users));
       
-      const { password: _, ...userWithoutPassword } = newUser;
-      setCurrentUser(userWithoutPassword);
-      localStorage.setItem('cardnest_current_user', JSON.stringify(userWithoutPassword));
-      setCurrentView('dashboard');
-      return { success: true };
+      if (isVerified) {
+        const { password: _, ...userWithoutPassword } = newUser;
+        setCurrentUser(userWithoutPassword);
+        localStorage.setItem('cardnest_current_user', JSON.stringify(userWithoutPassword));
+        setCurrentView('dashboard');
+        return { success: true, pendingApproval: false };
+      } else {
+        return { success: true, pendingApproval: true };
+      }
     }
   };
 
