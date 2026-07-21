@@ -11,7 +11,7 @@ import CardBuilder from './components/CardBuilder';
 import PublicCardView from './components/PublicCardView';
 import { User, DigitalCard } from './types';
 import { mockUsers, mockCards } from './data/mockData';
-import { isSupabaseConfigured, dbFetchCards, dbSaveCard, dbDeleteCard, supabase } from './lib/supabase';
+import { isSupabaseConfigured, dbFetchCards, dbFetchCardBySlug, dbSaveCard, dbDeleteCard, supabase } from './lib/supabase';
 
 export default function App() {
   // Navigation View State: 'landing' | 'dashboard' | 'admin' | 'builder' | 'public'
@@ -39,6 +39,31 @@ export default function App() {
   // Specific card focuses
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [activeCardSlug, setActiveCardSlug] = useState<string | null>(null);
+
+  // Helper to parse deep link slug from URL path, query or hash
+  const getSlugFromUrl = () => {
+    // 1. Check query parameters first (e.g. ?card=krishna or ?slug=krishna)
+    const params = new URLSearchParams(window.location.search);
+    const querySlug = params.get('card') || params.get('slug') || params.get('u') || params.get('id');
+    if (querySlug) return querySlug;
+
+    // 2. Check hash (e.g. #/krishna or #krishna)
+    const hash = window.location.hash;
+    if (hash) {
+      const hashSlug = hash.replace(/^#\/?/, '');
+      if (hashSlug && !hashSlug.includes('=')) { // Ensure it's not a query-like hash
+        return hashSlug;
+      }
+    }
+
+    // 3. Fallback to pathname (e.g. /krishna)
+    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    if (path && path !== 'index.html' && !path.includes('.') && !path.startsWith('api/')) {
+      return path;
+    }
+
+    return null;
+  };
 
   // Initialize demo accounts in localStorage if not exists (for seamless local sandbox auth)
   useEffect(() => {
@@ -157,10 +182,15 @@ export default function App() {
               joinedAt: sbUser.created_at || new Date().toISOString()
             };
             setCurrentUser(mappedUser);
-            if (mappedUser.role === 'super_admin') {
-              setCurrentView('admin');
-            } else {
-              setCurrentView('dashboard');
+            
+            // Only redirect to admin/dashboard if we are NOT on a public deep-link page
+            const targetSlug = getSlugFromUrl();
+            if (!targetSlug) {
+              if (mappedUser.role === 'super_admin') {
+                setCurrentView('admin');
+              } else {
+                setCurrentView('dashboard');
+              }
             }
           }
         } catch (err) {
@@ -172,10 +202,15 @@ export default function App() {
           try {
             const parsedUser = JSON.parse(savedUser);
             setCurrentUser(parsedUser);
-            if (parsedUser.role === 'super_admin') {
-              setCurrentView('admin');
-            } else {
-              setCurrentView('dashboard');
+            
+            // Only redirect to admin/dashboard if we are NOT on a public deep-link page
+            const targetSlug = getSlugFromUrl();
+            if (!targetSlug) {
+              if (parsedUser.role === 'super_admin') {
+                setCurrentView('admin');
+              } else {
+                setCurrentView('dashboard');
+              }
             }
           } catch (e) {
             console.error('Error loading saved local user:', e);
@@ -199,20 +234,24 @@ export default function App() {
           setCards(fetched);
           localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
         } else {
-          // If database is empty, seed with initial mock data so the app has high-fidelity records on first launch
-          console.log('Seeding Supabase database with default digital business cards...');
-          for (const card of mockCards) {
-            await dbSaveCard(card);
-          }
-          const seeded = await dbFetchCards();
-          if (seeded && seeded.length > 0) {
-            setCards(seeded);
-            localStorage.setItem('cardnest_local_cards', JSON.stringify(seeded));
+          // If database is empty, seed with initial mock data ONLY if there is an active session (authenticated user)
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            console.log('Seeding Supabase database with default digital business cards...');
+            for (const card of mockCards) {
+              await dbSaveCard(card);
+            }
+            const seeded = await dbFetchCards();
+            if (seeded && seeded.length > 0) {
+              setCards(seeded);
+              localStorage.setItem('cardnest_local_cards', JSON.stringify(seeded));
+            }
           }
         }
         setDbError(null);
       } catch (err: any) {
-        setDbError(err.message || 'Failed to sync with Supabase tables.');
+        // Silently catch unauthenticated listing errors as guests might not have full select list access
+        console.warn('Listing all cards from Supabase failed or was restricted:', err.message);
       } finally {
         setDbLoading(false);
       }
@@ -221,38 +260,37 @@ export default function App() {
     loadCards();
   }, []);
 
-  // Parse path, query, or hash on mount/URL change to allow robust deep-linking (e.g. /#/krishna or ?card=krishna) without 404 errors
+  // Parse path, query, or hash on mount/URL change to allow robust deep-linking without 404 errors
   useEffect(() => {
-    const getSlugFromUrl = () => {
-      // 1. Check query parameters first (e.g. ?card=krishna or ?slug=krishna)
-      const params = new URLSearchParams(window.location.search);
-      const querySlug = params.get('card') || params.get('slug') || params.get('u') || params.get('id');
-      if (querySlug) return querySlug;
-
-      // 2. Check hash (e.g. #/krishna or #krishna)
-      const hash = window.location.hash;
-      if (hash) {
-        const hashSlug = hash.replace(/^#\/?/, '');
-        if (hashSlug && !hashSlug.includes('=')) { // Ensure it's not a query-like hash
-          return hashSlug;
-        }
-      }
-
-      // 3. Fallback to pathname (e.g. /krishna)
-      const path = window.location.pathname.replace(/^\/|\/$/g, '');
-      if (path && path !== 'index.html' && !path.includes('.') && !path.startsWith('api/')) {
-        return path;
-      }
-
-      return null;
-    };
-
     const targetSlug = getSlugFromUrl();
     if (targetSlug) {
       setActiveCardSlug(targetSlug);
       setCurrentView('public');
     }
   }, []); // Run on mount to catch deep linking before any user interaction
+
+  // Fetch live target card from Supabase whenever activeCardSlug changes or on mount
+  useEffect(() => {
+    async function fetchPublicCard() {
+      if (!isSupabaseConfigured || !activeCardSlug) return;
+      
+      try {
+        const fetchedCard = await dbFetchCardBySlug(activeCardSlug);
+        if (fetchedCard) {
+          setCards(prev => {
+            const filtered = prev.filter(c => c.id !== fetchedCard.id && c.slug.toLowerCase() !== fetchedCard.slug.toLowerCase());
+            const updated = [fetchedCard, ...filtered];
+            localStorage.setItem('cardnest_local_cards', JSON.stringify(updated));
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error(`Failed to load target card "${activeCardSlug}" directly:`, err);
+      }
+    }
+    
+    fetchPublicCard();
+  }, [activeCardSlug]);
 
   // Synchronize browser address bar with the current application view / slug
   useEffect(() => {
