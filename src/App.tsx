@@ -412,12 +412,37 @@ export default function App() {
   const onRealLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        let authResult = await supabase.auth.signInWithPassword({
           email,
           password
         });
-        if (error) throw error;
         
+        // If sign in fails on live Supabase, and it is a demo account, let's automatically sign up the user!
+        if (authResult.error && (email === 'admin@cardnest.com' || email === 'alex.rivera@designco.io')) {
+          console.log(`Auto-onboarding live demo user "${email}" into your connected Supabase project...`);
+          const signUpResult = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                fullName: email === 'admin@cardnest.com' ? 'Chief Admin' : 'Alex Rivera',
+                full_name: email === 'admin@cardnest.com' ? 'Chief Admin' : 'Alex Rivera'
+              }
+            }
+          });
+          
+          if (!signUpResult.error) {
+            // Re-attempt sign in
+            authResult = await supabase.auth.signInWithPassword({
+              email,
+              password
+            });
+          }
+        }
+        
+        if (authResult.error) throw authResult.error;
+        
+        const data = authResult.data;
         if (data.user) {
           const sbUser = data.user;
           const mappedUser: User = {
