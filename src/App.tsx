@@ -234,23 +234,19 @@ export default function App() {
 
     const targetSlug = getSlugFromUrl();
     if (targetSlug) {
-      // Find matching card in memory
-      const matched = cards.find(c => c.slug.toLowerCase() === targetSlug.toLowerCase());
-      if (matched) {
-        setActiveCardSlug(matched.slug);
-        setCurrentView('public');
-      }
+      setActiveCardSlug(targetSlug);
+      setCurrentView('public');
     }
-  }, [cards]);
+  }, []); // Run on mount to catch deep linking before any user interaction
 
   // Synchronize browser address bar with the current application view / slug
   useEffect(() => {
     if (currentView === 'public' && activeCardSlug) {
-      const targetPath = `/${activeCardSlug}`;
+      const targetPath = `/${activeCardSlug.toLowerCase()}`;
       if (window.location.pathname !== targetPath) {
         window.history.pushState(null, '', targetPath);
       }
-    } else if (currentView === 'landing') {
+    } else {
       if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
         window.history.pushState(null, '', '/');
       }
@@ -528,7 +524,7 @@ export default function App() {
   
   // Focus card for previewing/building
   const activeBuilderCard = cards.find(c => c.id === activeCardId);
-  const activePublicCard = cards.find(c => c.slug === activeCardSlug);
+  const activePublicCard = cards.find(c => c.slug.toLowerCase() === activeCardSlug?.toLowerCase());
 
   // Check if owner is verified
   let isActivePublicCardOwnerVerified = true;
@@ -584,9 +580,10 @@ export default function App() {
       )}
 
       {/* 5. Direct Public Business Card View */}
-      {currentView === 'public' && activePublicCard && (
+      {currentView === 'public' && (
         <PublicCardView 
           card={activePublicCard}
+          isLoading={dbLoading}
           isVerified={isActivePublicCardOwnerVerified}
           onBackToDashboard={() => {
             if (currentUser) {
