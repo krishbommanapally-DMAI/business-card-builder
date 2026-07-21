@@ -18,7 +18,20 @@ export default function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'admin' | 'builder' | 'public'>('landing');
   
   // Database States
-  const [cards, setCards] = useState<DigitalCard[]>(mockCards);
+  const [cards, setCards] = useState<DigitalCard[]>(() => {
+    const localCardsRaw = localStorage.getItem('cardnest_local_cards');
+    if (localCardsRaw) {
+      try {
+        const parsed = JSON.parse(localCardsRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Error parsing local cards:', e);
+      }
+    }
+    return mockCards;
+  });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [dbLoading, setDbLoading] = useState<boolean>(false);
   const [dbError, setDbError] = useState<string | null>(null);
@@ -184,6 +197,7 @@ export default function App() {
         const fetched = await dbFetchCards();
         if (fetched && fetched.length > 0) {
           setCards(fetched);
+          localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
         } else {
           // If database is empty, seed with initial mock data so the app has high-fidelity records on first launch
           console.log('Seeding Supabase database with default digital business cards...');
@@ -193,6 +207,7 @@ export default function App() {
           const seeded = await dbFetchCards();
           if (seeded && seeded.length > 0) {
             setCards(seeded);
+            localStorage.setItem('cardnest_local_cards', JSON.stringify(seeded));
           }
         }
         setDbError(null);
@@ -479,7 +494,11 @@ export default function App() {
   // Saving updated card from builder
   const handleSaveCardInBuilder = async (updatedCard: DigitalCard) => {
     // Optimistic state update
-    setCards(prev => prev.map(c => c.id === updatedCard.id ? updatedCard : c));
+    setCards(prev => {
+      const updated = prev.map(c => c.id === updatedCard.id ? updatedCard : c);
+      localStorage.setItem('cardnest_local_cards', JSON.stringify(updated));
+      return updated;
+    });
     
     if (isSupabaseConfigured) {
       try {
@@ -493,7 +512,11 @@ export default function App() {
 
   // Add new card
   const handleAddCard = async (newCard: DigitalCard) => {
-    setCards(prev => [newCard, ...prev]);
+    setCards(prev => {
+      const updated = [newCard, ...prev];
+      localStorage.setItem('cardnest_local_cards', JSON.stringify(updated));
+      return updated;
+    });
     
     if (isSupabaseConfigured) {
       try {
@@ -507,7 +530,11 @@ export default function App() {
 
   // Delete card
   const handleDeleteCard = async (cardId: string) => {
-    setCards(prev => prev.filter(c => c.id !== cardId));
+    setCards(prev => {
+      const updated = prev.filter(c => c.id !== cardId);
+      localStorage.setItem('cardnest_local_cards', JSON.stringify(updated));
+      return updated;
+    });
     
     if (isSupabaseConfigured) {
       try {
