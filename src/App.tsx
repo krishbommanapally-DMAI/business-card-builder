@@ -331,7 +331,9 @@ export default function App() {
           password
         });
         
-        if (error) throw error;
+        if (error) {
+          return { success: false, error: error.message || JSON.stringify(error) };
+        }
         
         if (data.user) {
           const sbUser = data.user;
@@ -359,7 +361,10 @@ export default function App() {
         }
         return { success: false, error: 'User login session not found.' };
       } catch (err: any) {
-        return { success: false, error: err.message || 'Login failed.' };
+        const errMsg = err && typeof err === 'object'
+          ? (err.message || err.error_description || JSON.stringify(err))
+          : String(err);
+        return { success: false, error: errMsg || 'Login failed.' };
       }
     } else {
       // LocalStorage Mode
@@ -419,7 +424,9 @@ export default function App() {
             }
           }
         });
-        if (error) throw error;
+        if (error) {
+          return { success: false, error: error.message || JSON.stringify(error) };
+        }
         
         if (data.user) {
           const sbUser = data.user;
@@ -477,7 +484,10 @@ export default function App() {
         }
         return { success: false, error: 'Registration succeeded, waiting for user session.' };
       } catch (err: any) {
-        return { success: false, error: err.message || 'Registration failed.' };
+        const errMsg = err && typeof err === 'object'
+          ? (err.message || err.error_description || JSON.stringify(err))
+          : String(err);
+        return { success: false, error: errMsg || 'Registration failed.' };
       }
     } else {
       // LocalStorage Mode
