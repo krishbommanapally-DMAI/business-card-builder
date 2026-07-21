@@ -229,22 +229,55 @@ export default function App() {
       
       setDbLoading(true);
       try {
-        const fetched = await dbFetchCards();
-        if (fetched && fetched.length > 0) {
-          setCards(prev => {
-            const fetchedIds = new Set(fetched.map(c => c.id));
-            const localOnly = prev.filter(c => !fetchedIds.has(c.id));
-            const merged = [...fetched, ...localOnly];
-            localStorage.setItem('cardnest_local_cards', JSON.stringify(merged));
-            return merged;
-          });
+        const fetched = await dbFetchCards() || [];
+        
+        // Retrieve current local cards from localStorage
+        const localCardsRaw = localStorage.getItem('cardnest_local_cards');
+        let localCards: DigitalCard[] = [];
+        if (localCardsRaw) {
+          try {
+            localCards = JSON.parse(localCardsRaw);
+          } catch (e) {
+            console.error('Error parsing local cards:', e);
+          }
+        }
+        
+        if (fetched.length > 0) {
+          const fetchedIds = new Set(fetched.map(c => c.id));
+          const localOnly = localCards.filter(c => !fetchedIds.has(c.id));
+          
+          if (localOnly.length > 0) {
+            console.log(`Syncing ${localOnly.length} local-only cards to Supabase...`);
+            // Sync each unsynced local card to Supabase database
+            for (const card of localOnly) {
+              try {
+                await dbSaveCard(card);
+              } catch (saveErr) {
+                console.error(`Auto-sync failed for card ${card.id}:`, saveErr);
+              }
+            }
+            // Re-fetch the newly updated complete cards list from Supabase
+            const updatedFetched = await dbFetchCards();
+            if (updatedFetched && updatedFetched.length > 0) {
+              setCards(updatedFetched);
+              localStorage.setItem('cardnest_local_cards', JSON.stringify(updatedFetched));
+            }
+          } else {
+            setCards(fetched);
+            localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
+          }
         } else {
-          // If database is empty, seed with initial mock data ONLY if there is an active session (authenticated user)
+          // If database is empty, seed with existing local cards (if any) or default mock data
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
-            console.log('Seeding Supabase database with default digital business cards...');
-            for (const card of mockCards) {
-              await dbSaveCard(card);
+            console.log('Seeding Supabase database with default/local digital business cards...');
+            const cardsToSave = localCards.length > 0 ? localCards : mockCards;
+            for (const card of cardsToSave) {
+              try {
+                await dbSaveCard(card);
+              } catch (saveErr) {
+                console.error(`Auto-sync seed failed for card ${card.id}:`, saveErr);
+              }
             }
             const seeded = await dbFetchCards();
             if (seeded && seeded.length > 0) {
