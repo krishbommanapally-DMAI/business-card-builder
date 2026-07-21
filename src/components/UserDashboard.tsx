@@ -171,6 +171,25 @@ export default function UserDashboard({
       {/* Main Workspace Frame */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto max-w-7xl">
         
+        {user.isVerified === false && (
+          <div className="mb-6 p-5 bg-amber-50/75 border border-amber-200/60 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/25 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
+                <ShieldCheck size={24} />
+              </div>
+              <div className="text-left">
+                <h4 className="font-display font-extrabold text-slate-900 text-base">Account Verification Pending Approval</h4>
+                <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                  Your registration is currently under administrator review. You are welcome to design and customize your contactless business card, but public visitors will be blocked from viewing your card slug until an administrator approves your account.
+                </p>
+              </div>
+            </div>
+            <span className="bg-amber-100 border border-amber-200/50 text-amber-800 font-extrabold px-3 py-1.5 rounded-xl text-[10px] tracking-wider uppercase shrink-0">
+              Awaiting Verification
+            </span>
+          </div>
+        )}
+
         {/* Header Block */}
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200">
           <div>
