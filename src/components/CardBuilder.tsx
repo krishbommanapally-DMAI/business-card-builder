@@ -103,7 +103,7 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
 
         {/* Builder Status controls */}
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline text-xs text-slate-400 font-semibold font-mono">vcard-cyan.vercel.app/{editedCard.slug}</span>
+          <span className="hidden sm:inline text-xs text-slate-400 font-semibold font-mono">{window.location.host}/?card={editedCard.slug}</span>
           
           <button 
             id="btn-builder-save"
@@ -706,7 +706,7 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                     <label className="block text-[10px] font-bold text-slate-500 mb-1">Card Slug URL Path</label>
                     <div className="flex rounded-xl overflow-hidden border border-slate-200">
                       <span className="bg-slate-100 text-slate-500 px-3 py-2.5 text-xs font-semibold flex items-center border-r border-slate-200 whitespace-nowrap">
-                        vcard-cyan.vercel.app/
+                        {window.location.host}/?card=
                       </span>
                       <input 
                         type="text" 
@@ -941,7 +941,7 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
             <button 
               onClick={() => {
                 onSave(editedCard);
-                window.open(`${window.location.origin}/${editedCard.slug}`, '_blank');
+                window.open(`${window.location.origin}/?card=${editedCard.slug}`, '_blank');
               }}
               className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 transition-all cursor-pointer"
             >
