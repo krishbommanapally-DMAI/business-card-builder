@@ -22,6 +22,44 @@ export const supabase = createClient(
 );
 
 /**
+ * Checks if a string is a valid UUID format.
+ */
+export function isValidUUID(str: string): boolean {
+  if (!str) return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
+ * Generates a stable, reproducible UUID from an input string.
+ * This ensures mock string identifiers like "card-001" or "user-001" are converted
+ * to valid UUIDs that pass PostgreSQL type validation constraints perfectly.
+ */
+export function generateDeterministicUUID(namespace: string, input: string): string {
+  const combined = `${namespace}:${input || 'default'}`;
+  let hash = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  let hex = '';
+  for (let i = 0; i < 32; i++) {
+    const val = Math.abs(Math.sin(hash + i) * 16777216) % 16;
+    hex += Math.floor(val).toString(16);
+  }
+  
+  const part1 = hex.substring(0, 8);
+  const part2 = hex.substring(8, 12);
+  const part3 = '4' + hex.substring(13, 16); // Version 4
+  const part4 = ['8', '9', 'a', 'b'][Math.abs(hash) % 4] + hex.substring(17, 20); // Variant
+  const part5 = hex.substring(20, 32);
+  
+  return `${part1}-${part2}-${part3}-${part4}-${part5}`;
+}
+
+/**
  * Maps a database row from Supabase to our DigitalCard TypeScript type.
  * Supports both standard modular columns (snake_case/camelCase) and fallback fields.
  */
@@ -118,9 +156,13 @@ export function mapRowToCard(row: any): DigitalCard {
  * Generates only the standard snake_case keys to align with standard PostgreSQL schemas.
  */
 export function mapCardToRow(card: DigitalCard): any {
+  // Auto-heal non-UUID id and userId keys to valid, reproducible UUIDs
+  const dbCardId = isValidUUID(card.id) ? card.id : generateDeterministicUUID('card', card.id);
+  const dbUserId = isValidUUID(card.userId) ? card.userId : generateDeterministicUUID('user', card.userId);
+
   return {
-    id: card.id,
-    user_id: card.userId,
+    id: dbCardId,
+    user_id: dbUserId,
     slug: card.slug,
     template_id: card.templateId,
     theme_config: card.theme,
@@ -233,7 +275,7 @@ export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | nul
     const { data, error } = await supabase
       .from('cards')
       .select('*')
-      .eq('slug', slug)
+      .ilike('slug', slug)
       .maybeSingle();
       
     if (error) {
