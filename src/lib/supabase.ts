@@ -28,39 +28,88 @@ export const supabase = createClient(
 export function mapRowToCard(row: any): DigitalCard {
   if (!row) return {} as DigitalCard;
   
+  // Extract modular data with fallbacks
+  const mods = row.modules || {};
+  
+  // Parse name
+  let firstName = '';
+  let lastName = '';
+  if (mods.profile?.firstName !== undefined) {
+    firstName = mods.profile.firstName;
+    lastName = mods.profile.lastName || '';
+  } else if (row.full_name) {
+    const parts = row.full_name.trim().split(/\s+/);
+    firstName = parts[0] || '';
+    lastName = parts.slice(1).join(' ') || '';
+  }
+
+  const profile = {
+    prefix: mods.profile?.prefix || '',
+    firstName: firstName,
+    lastName: lastName,
+    designation: row.job_title || mods.profile?.designation || '',
+    company: row.company || mods.profile?.company || '',
+    tagline: row.bio || mods.profile?.tagline || '',
+    about: mods.profile?.about || row.bio || '',
+  };
+
+  const status = row.is_published !== undefined 
+    ? (row.is_published ? 'published' : 'draft') 
+    : (row.status || 'published');
+
   return {
     id: row.id,
     userId: row.user_id || row.userId || 'user-001',
     slug: row.slug || '',
     templateId: row.template_id || row.templateId || 'corporate',
-    status: row.status || 'published',
+    status: status,
     createdAt: row.created_at || row.createdAt || new Date().toISOString(),
     updatedAt: row.updated_at || row.updatedAt || new Date().toISOString(),
     
-    // Modules with robust fallback parsing
-    theme: row.theme || row.data?.theme || {},
-    hero: row.hero || row.data?.hero || {},
-    avatar: row.avatar || row.data?.avatar || {},
-    companyLogo: row.company_logo || row.companyLogo || row.data?.companyLogo || row.data?.company_logo || {},
-    profile: row.profile || row.data?.profile || {},
-    contact: row.contact || row.data?.contact || {},
-    socialLinks: row.social_links || row.socialLinks || row.data?.socialLinks || row.data?.social_links || [],
-    customButtons: row.custom_buttons || row.customButtons || row.data?.customButtons || row.data?.custom_buttons || [],
-    about: row.about || row.data?.about || {},
-    services: row.services || row.data?.services || [],
-    products: row.products || row.data?.products || [],
-    gallery: row.gallery || row.data?.gallery || [],
-    videos: row.videos || row.data?.videos || [],
-    testimonials: row.testimonials || row.data?.testimonials || [],
-    certificates: row.certificates || row.data?.certificates || [],
-    skills: row.skills || row.data?.skills || [],
-    education: row.education || row.data?.education || [],
-    experience: row.experience || row.data?.experience || [],
-    downloads: row.downloads || row.data?.downloads || [],
-    businessHours: row.business_hours || row.businessHours || row.data?.businessHours || row.data?.business_hours || {},
-    qrCode: row.qr_code || row.qrCode || row.data?.qrCode || row.data?.qr_code || {},
-    seo: row.seo || row.data?.seo || {},
-    analytics: row.analytics || row.data?.analytics || {},
+    // Modules with robust fallback parsing (both root columns and modules jsonb field)
+    theme: row.theme_config || row.theme || mods.theme || {},
+    hero: mods.hero || row.hero || {},
+    avatar: {
+      url: row.avatar_url || '',
+      borderWidth: 2,
+      borderColor: '#ffffff',
+      shadow: 'md',
+      size: 'medium',
+      position: 'center',
+      zoom: 1,
+      rotation: 0,
+      ...mods.avatar,
+      ...(row.avatar_url ? { url: row.avatar_url } : {})
+    },
+    companyLogo: {
+      enabled: false,
+      url: row.logo_url || '',
+      position: 'inline',
+      size: 'medium',
+      rounded: true,
+      shadow: true,
+      ...mods.companyLogo,
+      ...(row.logo_url ? { url: row.logo_url } : {})
+    },
+    profile: profile,
+    contact: row.contact_info || row.contact || mods.contact || {},
+    socialLinks: row.socials || row.social_links || row.socialLinks || mods.socialLinks || [],
+    customButtons: mods.customButtons || row.custom_buttons || row.customButtons || [],
+    about: mods.about || row.about || {},
+    services: mods.services || row.services || [],
+    products: mods.products || row.products || [],
+    gallery: mods.gallery || row.gallery || [],
+    videos: mods.videos || row.videos || [],
+    testimonials: mods.testimonials || row.testimonials || [],
+    certificates: mods.certificates || row.certificates || [],
+    skills: mods.skills || row.skills || [],
+    education: mods.education || row.education || [],
+    experience: mods.experience || row.experience || [],
+    downloads: mods.downloads || row.downloads || [],
+    businessHours: mods.businessHours || row.business_hours || row.businessHours || {},
+    qrCode: row.qr_code_config || row.qr_code || row.qrCode || mods.qrCode || {},
+    seo: mods.seo || row.seo || {},
+    analytics: mods.analytics || row.analytics || {},
   } as DigitalCard;
 }
 
@@ -74,33 +123,42 @@ export function mapCardToRow(card: DigitalCard): any {
     user_id: card.userId,
     slug: card.slug,
     template_id: card.templateId,
-    status: card.status,
+    theme_config: card.theme,
+    full_name: `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim() || card.profile?.firstName || '',
+    job_title: card.profile?.designation || '',
+    company: card.profile?.company || '',
+    bio: card.profile?.tagline || card.profile?.about || '',
+    avatar_url: card.avatar?.url || '',
+    logo_url: card.companyLogo?.url || '',
+    contact_info: card.contact || {},
+    socials: card.socialLinks || [],
+    qr_code_config: card.qrCode || {},
+    is_published: card.status === 'published',
+    created_at: card.createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString(),
     
-    // Modules
-    theme: card.theme,
-    hero: card.hero,
-    avatar: card.avatar,
-    company_logo: card.companyLogo,
-    profile: card.profile,
-    contact: card.contact,
-    social_links: card.socialLinks,
-    custom_buttons: card.customButtons,
-    about: card.about,
-    services: card.services,
-    products: card.products,
-    gallery: card.gallery,
-    videos: card.videos,
-    testimonials: card.testimonials,
-    certificates: card.certificates,
-    skills: card.skills,
-    education: card.education,
-    experience: card.experience,
-    downloads: card.downloads,
-    business_hours: card.businessHours,
-    qr_code: card.qrCode,
-    seo: card.seo,
-    analytics: card.analytics,
+    // Store remaining modular fields in the 'modules' column to prevent DB structure errors
+    modules: {
+      hero: card.hero || {},
+      avatar: card.avatar || {},
+      companyLogo: card.companyLogo || {},
+      profile: card.profile || {},
+      customButtons: card.customButtons || [],
+      about: card.about || {},
+      services: card.services || [],
+      products: card.products || [],
+      gallery: card.gallery || [],
+      videos: card.videos || [],
+      testimonials: card.testimonials || [],
+      certificates: card.certificates || [],
+      skills: card.skills || [],
+      education: card.education || [],
+      experience: card.experience || [],
+      downloads: card.downloads || [],
+      businessHours: card.businessHours || {},
+      seo: card.seo || {},
+      analytics: card.analytics || {},
+    }
   };
 }
 
