@@ -18,7 +18,32 @@ interface AdminDashboardProps {
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'plans' | 'cms'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
-  const [userList, setUserList] = useState(mockAdminStats.recentUsers);
+  const [userList, setUserList] = useState<any[]>(() => {
+    const raw = localStorage.getItem('cardnest_local_users');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((u: any) => ({
+            id: u.id,
+            name: u.fullName || u.name || 'Anonymous User',
+            email: u.email,
+            role: u.role === 'super_admin' ? 'Super Admin' : 'Premium User',
+            cards: u.id === 'user-001' ? 2 : u.id === 'user-002' ? 1 : 0,
+            status: u.isVerified === false ? 'Pending Approval' : (u.subscription?.status === 'suspended' ? 'Suspended' : 'Active'),
+            isVerified: u.isVerified !== false
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [
+      { id: 'user-001', name: 'Alex Rivera', email: 'alex.rivera@designco.io', role: 'Premium User', cards: 2, status: 'Active', isVerified: true },
+      { id: 'user-002', name: 'Dr. Sarah Chen', email: 'dr.sarah.chen@medcare.org', role: 'Premium User', cards: 1, status: 'Active', isVerified: true },
+      { id: 'user-free', name: 'Marcus Vance', email: 'marcus.vance@gmail.com', role: 'Free User', cards: 0, status: 'Active', isVerified: true }
+    ];
+  });
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Filtered Users list
@@ -26,6 +51,35 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Verify / Approve user account
+  const handleVerifyUser = (userId: string) => {
+    setUserList(prev => prev.map(u => {
+      if (u.id === userId) {
+        triggerToast(`User "${u.name}" account successfully verified & published!`);
+        return { ...u, isVerified: true, status: 'Active' };
+      }
+      return u;
+    }));
+
+    const raw = localStorage.getItem('cardnest_local_users');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed)) {
+          const updated = parsed.map((u: any) => {
+            if (u.id === userId) {
+              return { ...u, isVerified: true };
+            }
+            return u;
+          });
+          localStorage.setItem('cardnest_local_users', JSON.stringify(updated));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   // Toggle suspension state
   const handleToggleSuspend = (userId: string) => {
@@ -37,6 +91,31 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       }
       return u;
     }));
+
+    const raw = localStorage.getItem('cardnest_local_users');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed)) {
+          const updated = parsed.map((u: any) => {
+            if (u.id === userId) {
+              const currentStatus = u.subscription?.status || 'active';
+              return { 
+                ...u, 
+                subscription: { 
+                  ...u.subscription, 
+                  status: currentStatus === 'suspended' ? 'active' : 'suspended' 
+                } 
+              };
+            }
+            return u;
+          });
+          localStorage.setItem('cardnest_local_users', JSON.stringify(updated));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
 
   const triggerToast = (msg: string) => {
@@ -261,17 +340,41 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <td className="p-4 font-semibold text-indigo-700">{u.role}</td>
                       <td className="p-4 font-semibold">{u.cards}</td>
                       <td className="p-4">
-                        <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border ${u.status === 'Active' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+                        <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider border ${
+                          u.status === 'Active' 
+                            ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
+                            : u.status === 'Pending Approval' 
+                            ? 'bg-amber-50 border-amber-100 text-amber-700 font-extrabold' 
+                            : 'bg-red-50 border-red-100 text-red-700'
+                        }`}>
                           {u.status}
                         </span>
                       </td>
                       <td className="p-4 text-right flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => handleToggleSuspend(u.id)}
-                          className={`p-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${u.status === 'Active' ? 'bg-red-50 border-red-100 text-red-600 hover:bg-red-100' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
-                        >
-                          {u.status === 'Active' ? <ShieldAlert size={15} /> : <ShieldCheck size={15} />}
-                        </button>
+                        {u.status === 'Pending Approval' ? (
+                          <button 
+                            id={`btn-approve-user-${u.id}`}
+                            onClick={() => handleVerifyUser(u.id)}
+                            title="Verify & Publish Account"
+                            className="p-2 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                          >
+                            <ShieldCheck size={14} />
+                            <span>Verify User</span>
+                          </button>
+                        ) : (
+                          <button 
+                            id={`btn-suspend-user-${u.id}`}
+                            onClick={() => handleToggleSuspend(u.id)}
+                            title={u.status === 'Active' ? "Suspend Account" : "Activate Account"}
+                            className={`p-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                              u.status === 'Active' 
+                                ? 'bg-red-50 border-red-100 text-red-600 hover:bg-red-100' 
+                                : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'
+                            }`}
+                          >
+                            {u.status === 'Active' ? <ShieldAlert size={15} /> : <ShieldCheck size={15} />}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
