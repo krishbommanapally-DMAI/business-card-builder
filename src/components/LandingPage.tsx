@@ -714,7 +714,7 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
 
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-12 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-950 font-bold">
@@ -744,40 +744,6 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
               <li><span className="hover:text-white transition-colors cursor-pointer">Terms & Conditions</span></li>
               <li><span className="hover:text-white transition-colors cursor-pointer">SLA & Refund Terms</span></li>
             </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-widest text-[10px]">Platform Quick Access</h4>
-            <div className="flex flex-col gap-2">
-              <button 
-                id="btn-quick-admin-login"
-                onClick={() => {
-                  setAuthEmail('admin@cardnest.com');
-                  setAuthPassword('admin');
-                  setAuthMode('login');
-                  setAuthError(null);
-                  setShowAuthModal(true);
-                }} 
-                className="text-left bg-indigo-950 hover:bg-indigo-900 text-indigo-300 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-between border border-indigo-900/40 transition-all cursor-pointer"
-              >
-                <span>🔑 Enter Admin (Quick Fill)</span>
-                <ArrowRight size={13} />
-              </button>
-              <button 
-                id="btn-quick-premium-login"
-                onClick={() => {
-                  setAuthEmail('alex.rivera@designco.io');
-                  setAuthPassword('password123');
-                  setAuthMode('login');
-                  setAuthError(null);
-                  setShowAuthModal(true);
-                }} 
-                className="text-left bg-slate-850 hover:bg-slate-800 text-indigo-200 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-between border border-slate-800 transition-all cursor-pointer"
-              >
-                <span>✨ Enter User Builder (Quick Fill)</span>
-                <ArrowRight size={13} />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -875,41 +841,7 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
                   </div>
                 )}
 
-                {/* Demo Accounts Quick Fill (Highly Convenient) */}
-                <div className="mb-5 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl text-left">
-                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    💡 Demo Quick-Fill Accounts
-                  </h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5 mb-2.5">
-                    Click a user below to prefill real credentials, then submit to verify the auth pipeline.
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthEmail('alex.rivera@designco.io');
-                        setAuthPassword('password123');
-                        setAuthMode('login');
-                        setAuthError(null);
-                      }}
-                      className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
-                    >
-                      👤 Alex Rivera (User)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthEmail('admin@cardnest.com');
-                        setAuthPassword('Krish2611');
-                        setAuthMode('login');
-                        setAuthError(null);
-                      }}
-                      className="bg-white border border-slate-200 hover:border-indigo-600 hover:text-indigo-950 transition-all rounded-lg p-1.5 text-[10px] font-bold text-slate-600 text-center cursor-pointer"
-                    >
-                      🔑 Chief Admin (Admin)
-                    </button>
-                  </div>
-                </div>
+
 
                 <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
                   {authMode === 'register' && (
