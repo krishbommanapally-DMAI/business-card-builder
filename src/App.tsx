@@ -114,51 +114,6 @@ export default function App() {
       usersList.push(adminUser);
     }
 
-    // Also verify that preseeded ones have isVerified: true
-    const alexIndex = usersList.findIndex((u: any) => u.email === 'alex.rivera@designco.io');
-    if (alexIndex >= 0) {
-      usersList[alexIndex].isVerified = true;
-    } else if (!existing) {
-      usersList.push({
-        id: 'user-001',
-        email: 'alex.rivera@designco.io',
-        password: 'password123',
-        fullName: 'Alex Rivera',
-        role: 'premium_user',
-        isVerified: true,
-        subscription: {
-          plan: 'Premium',
-          status: 'active',
-          expiresAt: '2029-12-31',
-          price: 19
-        },
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        joinedAt: '2026-03-12'
-      });
-    }
-
-    const sarahIndex = usersList.findIndex((u: any) => u.email === 'dr.sarah.chen@medcare.org');
-    if (sarahIndex >= 0) {
-      usersList[sarahIndex].isVerified = true;
-    } else if (!existing) {
-      usersList.push({
-        id: 'user-002',
-        email: 'dr.sarah.chen@medcare.org',
-        password: 'password123',
-        fullName: 'Dr. Sarah Chen',
-        role: 'premium_user',
-        isVerified: true,
-        subscription: {
-          plan: 'Premium',
-          status: 'active',
-          expiresAt: '2026-12-15',
-          price: 19
-        },
-        avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
-        joinedAt: '2026-05-01'
-      });
-    }
-
     localStorage.setItem('cardnest_local_users', JSON.stringify(usersList));
   }, []);
 
