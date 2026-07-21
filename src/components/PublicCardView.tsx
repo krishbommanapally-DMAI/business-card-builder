@@ -130,25 +130,15 @@ END:VCARD`;
         <div className="absolute top-40 right-10 w-48 h-48 rounded-full blur-3xl opacity-20 animate-pulse-slow" style={{ backgroundColor: card.theme.secondaryColor, animationDelay: '2s' }}></div>
       </div>
 
-      {/* Floating builder redirect tool */}
-      {onBackToDashboard && (
-        <div className="w-full max-w-lg px-4 pt-6 shrink-0 z-20 flex justify-between items-center">
-          <button 
-            id="btn-public-back-to-dash"
-            onClick={onBackToDashboard}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-          >
-            <ArrowLeft size={14} /> Back to Dashboard
-          </button>
-          
-          <button 
-            onClick={handleShareLink}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-          >
-            {copiedUrl ? <Check size={14} className="text-emerald-400" /> : <Smartphone size={14} />} {copiedUrl ? 'Copied' : 'Share Card'}
-          </button>
-        </div>
-      )}
+      {/* Floating share controls - Only Share Card to look clean and professional */}
+      <div className="w-full max-w-lg px-4 pt-6 shrink-0 z-20 flex justify-end items-center">
+        <button 
+          onClick={handleShareLink}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+        >
+          {copiedUrl ? <Check size={14} className="text-emerald-400" /> : <Smartphone size={14} />} {copiedUrl ? 'Copied' : 'Share Card'}
+        </button>
+      </div>
 
       {/* Primary Card View Sheet */}
       <main 
