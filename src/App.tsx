@@ -206,12 +206,36 @@ export default function App() {
     loadCards();
   }, []);
 
-  // Parse path on mount to allow deep-linking (e.g. /alexrivera)
+  // Parse path, query, or hash on mount/URL change to allow robust deep-linking (e.g. /#/krishna or ?card=krishna) without 404 errors
   useEffect(() => {
-    const path = window.location.pathname.replace(/^\/|\/$/g, '');
-    if (path) {
+    const getSlugFromUrl = () => {
+      // 1. Check query parameters first (e.g. ?card=krishna or ?slug=krishna)
+      const params = new URLSearchParams(window.location.search);
+      const querySlug = params.get('card') || params.get('slug') || params.get('u') || params.get('id');
+      if (querySlug) return querySlug;
+
+      // 2. Check hash (e.g. #/krishna or #krishna)
+      const hash = window.location.hash;
+      if (hash) {
+        const hashSlug = hash.replace(/^#\/?/, '');
+        if (hashSlug && !hashSlug.includes('=')) { // Ensure it's not a query-like hash
+          return hashSlug;
+        }
+      }
+
+      // 3. Fallback to pathname (e.g. /krishna)
+      const path = window.location.pathname.replace(/^\/|\/$/g, '');
+      if (path && path !== 'index.html' && !path.includes('.') && !path.startsWith('api/')) {
+        return path;
+      }
+
+      return null;
+    };
+
+    const targetSlug = getSlugFromUrl();
+    if (targetSlug) {
       // Find matching card in memory
-      const matched = cards.find(c => c.slug.toLowerCase() === path.toLowerCase());
+      const matched = cards.find(c => c.slug.toLowerCase() === targetSlug.toLowerCase());
       if (matched) {
         setActiveCardSlug(matched.slug);
         setCurrentView('public');
