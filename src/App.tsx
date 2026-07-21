@@ -243,6 +243,20 @@ export default function App() {
     }
   }, [cards]);
 
+  // Synchronize browser address bar with the current application view / slug
+  useEffect(() => {
+    if (currentView === 'public' && activeCardSlug) {
+      const targetPath = `/${activeCardSlug}`;
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState(null, '', targetPath);
+      }
+    } else if (currentView === 'landing') {
+      if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+        window.history.pushState(null, '', '/');
+      }
+    }
+  }, [currentView, activeCardSlug]);
+
   // Handle real login authentication (Supabase or local storage fallback)
   const onRealLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     if (isSupabaseConfigured) {
