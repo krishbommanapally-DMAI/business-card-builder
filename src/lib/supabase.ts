@@ -166,6 +166,31 @@ export async function dbFetchCards(): Promise<DigitalCard[]> {
 }
 
 /**
+ * Fetches a single digital card by its slug from Supabase.
+ */
+export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | null> {
+  if (!isSupabaseConfigured) return null;
+  
+  try {
+    const { data, error } = await supabase
+      .from('cards')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle();
+      
+    if (error) {
+      console.error(`Supabase query error fetching card with slug ${slug}:`, error.message);
+      throw error;
+    }
+    
+    return data ? mapRowToCard(data) : null;
+  } catch (err) {
+    console.error(`Failed to fetch card with slug ${slug} from Supabase:`, err);
+    throw err;
+  }
+}
+
+/**
  * Saves (inserts or updates) a digital card in Supabase.
  * Implements an auto-healing retry mechanism that filters out columns not present in the user's DB,
  * and handles common security or structural database blocks.
