@@ -11,6 +11,7 @@ import {
   ChevronRight, Sparkles, Send, ShieldAlert, X, AlertCircle, ShoppingBag
 } from 'lucide-react';
 import { DigitalCard } from '../types';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface PublicCardViewProps {
   card?: DigitalCard;
@@ -61,10 +62,25 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
           {onBackToDashboard && (
             <button 
               onClick={onBackToDashboard}
-              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer w-full mb-4"
             >
               ← Back to Dashboard
             </button>
+          )}
+
+          {isSupabaseConfigured && (
+            <div className="mt-6 text-left bg-slate-950/80 border border-indigo-500/20 p-4 rounded-2xl text-xs text-indigo-200 font-mono">
+              <p className="font-bold mb-1 text-indigo-400">⚡ Developer Note (Supabase RLS):</p>
+              <p className="mb-2 text-[11px] leading-normal text-slate-400">
+                If this card exists in your database but returns "Not Found" for logged-out/guest users, your Row Level Security (RLS) is blocking public read access.
+              </p>
+              <p className="mb-2 text-[11px] leading-normal text-slate-400">
+                To fix this, go to your **Supabase SQL Editor** and run:
+              </p>
+              <pre className="bg-slate-900 p-2.5 rounded border border-slate-800 text-[10px] overflow-x-auto text-indigo-300">
+                {`CREATE POLICY "Enable read access for all users" \nON "public"."cards" \nFOR SELECT \nUSING (true);`}
+              </pre>
+            </div>
           )}
         </div>
       </div>
