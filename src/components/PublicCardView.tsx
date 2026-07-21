@@ -13,18 +13,63 @@ import {
 import { DigitalCard } from '../types';
 
 interface PublicCardViewProps {
-  card: DigitalCard;
+  card?: DigitalCard;
   isVerified?: boolean;
+  isLoading?: boolean;
   onBackToDashboard?: () => void; // Optional button back to panels
 }
 
-export default function PublicCardView({ card, isVerified, onBackToDashboard }: PublicCardViewProps) {
+export default function PublicCardView({ card, isVerified, isLoading, onBackToDashboard }: PublicCardViewProps) {
   const [activeLightbox, setActiveLightbox] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [bookingForm, setBookingForm] = useState({ name: '', email: '', note: '' });
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white font-sans relative overflow-hidden">
+        {/* Ambient lighting */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-72 bg-indigo-600/25 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 right-10 w-48 h-48 rounded-full blur-3xl opacity-20 bg-indigo-500 pointer-events-none"></div>
+
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4 animate-duration-1000"></div>
+          <p className="text-slate-400 text-xs font-semibold tracking-wider uppercase font-mono animate-pulse">Loading Digital Card...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!card) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white font-sans relative overflow-hidden">
+        {/* Ambient lighting */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-72 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl relative overflow-hidden z-10">
+          <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert size={32} />
+          </div>
+          
+          <h2 className="text-2xl font-bold tracking-tight text-white mb-3">Card Not Found</h2>
+          <p className="text-slate-400 text-sm leading-relaxed mb-6">
+            The digital business card you are looking for doesn't exist, is private, or has been moved. Please double check the URL and try again.
+          </p>
+          
+          {onBackToDashboard && (
+            <button 
+              onClick={onBackToDashboard}
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+            >
+              ← Back to Dashboard
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (isVerified === false) {
     return (
