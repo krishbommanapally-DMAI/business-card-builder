@@ -67,113 +67,17 @@ export default function App() {
     return null;
   };
 
-  // Initialize demo accounts in localStorage if not exists (for seamless local sandbox auth)
+  // Reset/Clear preseeded local accounts on load to satisfy "remove all users" request
   useEffect(() => {
-    let usersList = [];
-    const existing = localStorage.getItem('cardnest_local_users');
-    if (existing) {
-      try {
-        usersList = JSON.parse(existing);
-      } catch (e) {
-        console.error('Error parsing cardnest_local_users:', e);
-        usersList = [];
-      }
-    }
-    
-    if (!Array.isArray(usersList)) {
-      usersList = [];
-    }
-    
-    // Check if the required Admin user exists with correct password, or seed it
-    const adminIndex = usersList.findIndex((u: any) => (u.email && u.email.toLowerCase() === 'admin@cardnest.com') || (u.username && u.username.toLowerCase() === 'admin'));
-    const adminUser = {
-      id: 'user-admin',
-      email: 'admin@cardnest.com',
-      username: 'Admin',
-      password: 'Krish2611',
-      fullName: 'Chief Admin',
-      role: 'super_admin' as const,
-      isVerified: true,
-      subscription: {
-        plan: 'Enterprise' as const,
-        status: 'active' as const,
-        expiresAt: '2099-12-31',
-        price: 0
-      },
-      avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-      joinedAt: '2026-01-01'
-    };
-
-    if (adminIndex >= 0) {
-      usersList[adminIndex].password = 'Krish2611';
-      usersList[adminIndex].email = 'admin@cardnest.com';
-      usersList[adminIndex].username = 'Admin';
-      usersList[adminIndex].role = 'super_admin';
-      usersList[adminIndex].isVerified = true;
-    } else {
-      usersList.push(adminUser);
-    }
-
-    localStorage.setItem('cardnest_local_users', JSON.stringify(usersList));
+    localStorage.setItem('cardnest_local_users', '[]');
   }, []);
 
-  // Restore session on mount
+  // Restore session on mount - Auto Login is completely disabled as requested
   useEffect(() => {
     async function checkSession() {
-      if (isSupabaseConfigured) {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user) {
-            const sbUser = session.user;
-            const mappedUser: User = {
-              id: sbUser.id,
-              email: sbUser.email || '',
-              fullName: sbUser.user_metadata?.fullName || sbUser.user_metadata?.full_name || 'New User',
-              role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
-              subscription: {
-                plan: 'Premium',
-                status: 'active',
-                expiresAt: '2029-12-31',
-                price: 19
-              },
-              joinedAt: sbUser.created_at || new Date().toISOString()
-            };
-            setCurrentUser(mappedUser);
-            
-            // Only redirect to admin/dashboard if we are NOT on a public deep-link page
-            const targetSlug = getSlugFromUrl();
-            if (!targetSlug) {
-              if (mappedUser.role === 'super_admin') {
-                setCurrentView('admin');
-              } else {
-                setCurrentView('dashboard');
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching Supabase session:', err);
-        }
-      } else {
-        const savedUser = localStorage.getItem('cardnest_current_user');
-        if (savedUser) {
-          try {
-            const parsedUser = JSON.parse(savedUser);
-            setCurrentUser(parsedUser);
-            
-            // Only redirect to admin/dashboard if we are NOT on a public deep-link page
-            const targetSlug = getSlugFromUrl();
-            if (!targetSlug) {
-              if (parsedUser.role === 'super_admin') {
-                setCurrentView('admin');
-              } else {
-                setCurrentView('dashboard');
-              }
-            }
-          } catch (e) {
-            console.error('Error loading saved local user:', e);
-          }
-        }
-      }
+      // Auto-login is disabled. We wipe any leftover session state to ensure they start at the landing page.
+      localStorage.removeItem('cardnest_current_user');
+      setCurrentUser(null);
     }
 
     checkSession();
