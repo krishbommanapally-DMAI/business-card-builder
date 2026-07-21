@@ -306,9 +306,24 @@ export default function App() {
   // Fetch live target card from Supabase whenever activeCardSlug changes or on mount
   useEffect(() => {
     async function fetchPublicCard() {
-      if (!isSupabaseConfigured || !activeCardSlug) return;
+      if (!activeCardSlug) return;
       
       setPublicCardError(null);
+      
+      if (!isSupabaseConfigured) {
+        // If Supabase is not configured, we look in local storage cards
+        const localFound = cards.find(c => c.slug.toLowerCase() === activeCardSlug.toLowerCase());
+        if (!localFound) {
+          setPublicCardError(
+            `Database Connection Missing: Supabase is NOT configured in this environment.\n\n` +
+            `Since the cloud database is disconnected, the app fell back to Local Sandbox mode. ` +
+            `A guest user's local storage is empty, so card "${activeCardSlug}" could not be found.\n\n` +
+            `💡 HOW TO FIX: You must add "VITE_SUPABASE_URL" and "VITE_SUPABASE_ANON_KEY" to your deployment environment variables (e.g., in your Vercel project settings or .env file) to connect your live Supabase database.`
+          );
+        }
+        return;
+      }
+      
       try {
         const fetchedCard = await dbFetchCardBySlug(activeCardSlug);
         if (fetchedCard) {
@@ -319,7 +334,7 @@ export default function App() {
             return updated;
           });
         } else {
-          setPublicCardError(`Card not found. No business card with slug "${activeCardSlug}" exists in the database.`);
+          setPublicCardError(`Card not found. No digital business card with slug "${activeCardSlug}" was found in your Supabase "cards" table.`);
         }
       } catch (err: any) {
         console.error(`Failed to load target card "${activeCardSlug}" directly:`, err);
@@ -328,7 +343,7 @@ export default function App() {
     }
     
     fetchPublicCard();
-  }, [activeCardSlug]);
+  }, [activeCardSlug, isSupabaseConfigured]);
 
   // Synchronize browser address bar with the current application view / slug
   useEffect(() => {
