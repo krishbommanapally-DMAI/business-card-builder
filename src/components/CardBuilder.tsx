@@ -10,7 +10,8 @@ import {
   BookOpen, QrCode, Eye, Check, RefreshCw, Plus, Trash2, Calendar, 
   MapPin, Clock, Star, Award, Code2, GraduationCap, Briefcase, Download, ShoppingBag
 } from 'lucide-react';
-import { DigitalCard, CardTheme, SocialLink, CustomButton, ServiceItem, ProductItem, SkillItem } from '../types';
+import { DigitalCard, CardTheme, SocialLink, CustomButton, ServiceItem, ProductItem, SkillItem, GalleryItem } from '../types';
+import GallerySlideshow from './GallerySlideshow';
 
 interface CardBuilderProps {
   card: DigitalCard;
@@ -78,6 +79,27 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
   // Delete skill
   const deleteSkillItem = (id: string) => {
     updateCard(c => { c.skills = c.skills.filter(s => s.id !== id); });
+  };
+
+  // Add gallery item for slideshow
+  const addGalleryItem = () => {
+    const newItem: GalleryItem = {
+      id: `gal-${Date.now()}`,
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=600&auto=format&fit=crop&q=80',
+      title: 'New Showcase Photo'
+    };
+    updateCard(c => {
+      if (!c.gallery) c.gallery = [];
+      c.gallery.push(newItem);
+    });
+  };
+
+  // Delete gallery item
+  const deleteGalleryItem = (id: string) => {
+    updateCard(c => {
+      c.gallery = (c.gallery || []).filter(g => g.id !== id);
+    });
   };
 
   return (
@@ -181,13 +203,13 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
               <div className="flex flex-col gap-6">
                 <div>
                   <h3 className="font-display font-bold text-sm text-slate-900 uppercase tracking-wider mb-4">Hero Section Type</h3>
-                  <div className="grid grid-cols-4 gap-2.5">
-                    {['gradient', 'solid', 'image', 'none'].map((t) => (
+                  <div className="grid grid-cols-5 gap-2">
+                    {['solid', 'gradient', 'image', 'video', 'none'].map((t) => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => updateCard(c => { c.hero.type = t as any; })}
-                        className={`p-3 text-xs font-bold border rounded-xl capitalize text-center transition-all ${editedCard.hero.type === t ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950 font-bold' : 'border-slate-200 text-slate-500 hover:text-slate-700'}`}
+                        className={`p-3 text-xs font-bold border rounded-xl capitalize text-center transition-all ${editedCard.hero.type === t ? 'border-indigo-600 bg-indigo-50/80 text-indigo-950 font-black shadow-xs' : 'border-slate-200 text-slate-500 hover:text-slate-700'}`}
                       >
                         {t}
                       </button>
@@ -195,27 +217,107 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                   </div>
                 </div>
 
+                {/* Hero Solid Color editor */}
+                {editedCard.hero.type === 'solid' && (
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col gap-2">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Solid Banner Color</label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="color" 
+                        value={editedCard.hero.solidColor || editedCard.theme.primaryColor || '#0f172a'}
+                        onChange={(e) => updateCard(c => { c.hero.solidColor = e.target.value; })}
+                        className="w-12 h-10 border-0 rounded-lg cursor-pointer shrink-0"
+                      />
+                      <input 
+                        type="text" 
+                        value={editedCard.hero.solidColor || editedCard.theme.primaryColor || '#0f172a'}
+                        onChange={(e) => updateCard(c => { c.hero.solidColor = e.target.value; })}
+                        className="flex-1 px-3 py-2 border border-slate-200 rounded-xl bg-white text-xs font-mono font-bold text-slate-900"
+                        placeholder="#0f172a"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Hero Gradient detail editor */}
                 {editedCard.hero.type === 'gradient' && (
                   <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">Gradient Start</label>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Gradient Start</label>
                       <input 
                         type="color" 
-                        value={editedCard.hero.gradientStart || '#000000'}
+                        value={editedCard.hero.gradientStart || '#3B82F6'}
                         onChange={(e) => updateCard(c => { c.hero.gradientStart = e.target.value; })}
                         className="w-full h-10 border-0 rounded-lg cursor-pointer"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">Gradient End</label>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Gradient End</label>
                       <input 
                         type="color" 
-                        value={editedCard.hero.gradientEnd || '#000000'}
+                        value={editedCard.hero.gradientEnd || '#1E3A8A'}
                         onChange={(e) => updateCard(c => { c.hero.gradientEnd = e.target.value; })}
                         className="w-full h-10 border-0 rounded-lg cursor-pointer"
                       />
                     </div>
+                  </div>
+                )}
+
+                {/* Hero Image URL Link editor */}
+                {editedCard.hero.type === 'image' && (
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col gap-3">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hero Banner Image Link (URL)</label>
+                    <input 
+                      type="url" 
+                      value={editedCard.hero.mediaUrl || ''}
+                      onChange={(e) => updateCard(c => { c.hero.mediaUrl = e.target.value; })}
+                      placeholder="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop&q=80"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white text-xs text-slate-900 font-medium focus:outline-none focus:border-indigo-600"
+                    />
+                    <div className="flex flex-col gap-1.5 mt-1">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Quick Unsplash Presets</span>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop&q=80',
+                          'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&auto=format&fit=crop&q=80',
+                          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
+                          'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80'
+                        ].map((imgUrl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => updateCard(c => { c.hero.mediaUrl = imgUrl; })}
+                            className="h-12 rounded-lg overflow-hidden border border-slate-200 hover:border-indigo-600 transition-all cursor-pointer relative group"
+                          >
+                            <img src={imgUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="preset" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Hero Video URL Link editor */}
+                {editedCard.hero.type === 'video' && (
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col gap-3">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hero Video Link (MP4 / WebM Direct Stream URL)</label>
+                    <input 
+                      type="url" 
+                      value={editedCard.hero.mediaUrl || ''}
+                      onChange={(e) => updateCard(c => { c.hero.mediaUrl = e.target.value; })}
+                      placeholder="https://assets.mixkit.co/videos/preview/mixkit-working-in-a-group-in-an-office-4277-large.mp4"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white text-xs text-slate-900 font-medium focus:outline-none focus:border-indigo-600"
+                    />
+                    <p className="text-[10px] text-slate-500 leading-normal">
+                      Video plays in an ambient background loop behind your avatar.
+                    </p>
+                  </div>
+                )}
+
+                {/* Hero None Explanation */}
+                {editedCard.hero.type === 'none' && (
+                  <div className="bg-amber-50/80 border border-amber-200 p-4 rounded-2xl text-xs text-amber-900 leading-relaxed font-medium">
+                    ✨ <strong>No Hero Banner:</strong> Your avatar image will be positioned nicely at the top of the card with clean top spacing (no negative offset clipping).
                   </div>
                 )}
 
@@ -586,6 +688,80 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                   </div>
                 </div>
 
+                {/* Gallery Showcase Block (Slideshow) */}
+                <div>
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <div>
+                      <h3 className="font-display font-bold text-sm text-slate-900 uppercase tracking-wider">Gallery Slideshow</h3>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Photos added here render as an interactive auto-playing slideshow right after your services.</p>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={addGalleryItem}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 cursor-pointer shrink-0"
+                    >
+                      <Plus size={13} /> Add Photo
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    {(!editedCard.gallery || editedCard.gallery.length === 0) && (
+                      <div className="p-6 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                        <p className="text-xs text-slate-500 font-medium">No gallery photos added yet.</p>
+                        <button
+                          type="button"
+                          onClick={addGalleryItem}
+                          className="mt-2 text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                        >
+                          + Click here to add your first photo
+                        </button>
+                      </div>
+                    )}
+
+                    {(editedCard.gallery || []).map((gal, idx) => (
+                      <div key={gal.id || idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col gap-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Photo #{idx+1}</span>
+                          <button 
+                            type="button"
+                            onClick={() => deleteGalleryItem(gal.id)}
+                            className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+
+                        <div className="flex gap-3 items-center">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200">
+                            <img src={gal.url} alt="preview" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 flex flex-col gap-2">
+                            <div>
+                              <label className="block text-[9px] font-bold text-slate-500 mb-1">Photo Title / Caption</label>
+                              <input 
+                                type="text" 
+                                value={gal.title || ''}
+                                onChange={(e) => updateCard(c => { c.gallery[idx].title = e.target.value; })}
+                                placeholder="Headquarters interior..."
+                                className="w-full px-3 py-1.5 border border-slate-200 rounded-xl bg-white text-xs text-slate-950 font-bold"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-slate-500 mb-1">Image URL</label>
+                              <input 
+                                type="url" 
+                                value={gal.url}
+                                onChange={(e) => updateCard(c => { c.gallery[idx].url = e.target.value; })}
+                                className="w-full px-3 py-1.5 border border-slate-200 rounded-xl bg-white text-xs text-slate-950 font-medium"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Products Block */}
                 <div>
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -811,18 +987,23 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                           height: '110px',
                           background: editedCard.hero.type === 'gradient' 
                             ? `linear-gradient(135deg, ${editedCard.hero.gradientStart || '#3B82F6'}, ${editedCard.hero.gradientEnd || '#1E3A8A'})`
-                            : editedCard.hero.solidColor || editedCard.theme.primaryColor
+                            : editedCard.hero.type === 'solid'
+                            ? (editedCard.hero.solidColor || editedCard.theme.primaryColor)
+                            : 'none'
                         }}
-                        className="w-full shrink-0 relative flex items-center justify-center"
+                        className="w-full shrink-0 relative flex items-center justify-center overflow-hidden"
                       >
                         {editedCard.hero.type === 'image' && editedCard.hero.mediaUrl && (
                           <img src={editedCard.hero.mediaUrl} className="absolute inset-0 w-full h-full object-cover" alt="Hero" />
+                        )}
+                        {editedCard.hero.type === 'video' && editedCard.hero.mediaUrl && (
+                          <video src={editedCard.hero.mediaUrl} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
                         )}
                       </div>
                     )}
 
                     {/* Overlapping circular avatar */}
-                    <div className="flex flex-col items-center -mt-10 px-4 pb-4 shrink-0 text-center relative z-10">
+                    <div className={`flex flex-col items-center px-4 pb-4 shrink-0 text-center relative z-10 ${editedCard.hero.enabled && editedCard.hero.type !== 'none' ? '-mt-10' : 'pt-6'}`}>
                       <img 
                         src={editedCard.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
                         style={{
@@ -889,6 +1070,14 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                             <p className={`text-[9px] mt-0.5 leading-normal ${isDarkPreview ? 'text-slate-300' : 'text-slate-700'}`}>{s.description}</p>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Gallery Slideshow */}
+                    {editedCard.gallery && editedCard.gallery.length > 0 && (
+                      <div className={`px-4 py-3 flex flex-col gap-2 border-t ${isDarkPreview ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Gallery Showcase</span>
+                        <GallerySlideshow items={editedCard.gallery} isDark={isDarkPreview} primaryColor={editedCard.theme.primaryColor} />
                       </div>
                     )}
 
