@@ -183,72 +183,34 @@ export default function App() {
     checkSession();
   }, []);
 
-  // Sync Supabase cards on initialization
+  // Sync cards on initialization from central server/database
   useEffect(() => {
     async function loadCards() {
-      if (!isSupabaseConfigured) return;
-      
       setDbLoading(true);
       try {
-        // Retrieve current local cards from localStorage
-        const localCardsRaw = localStorage.getItem('cardnest_local_cards');
-        let localCards: DigitalCard[] = [];
-        if (localCardsRaw) {
-          try {
-            localCards = JSON.parse(localCardsRaw);
-          } catch (e) {
-            console.error('Error parsing local cards:', e);
-          }
-        }
-
-        const fetched = await dbFetchCards() || [];
-        
-        if (localCards.length > 0) {
-          console.log(`Syncing/updating ${localCards.length} local cards in Supabase database...`);
-          // Sync all local cards to database to ensure full schema alignment
-          for (const card of localCards) {
-            try {
-              await dbSaveCard(card);
-            } catch (saveErr) {
-              console.error(`Auto-sync failed for card ${card.id}:`, saveErr);
-            }
-          }
-          
-          // Re-fetch clean populated data from Supabase
-          const updatedFetched = await dbFetchCards();
-          if (updatedFetched && updatedFetched.length > 0) {
-            setCards(updatedFetched);
-            localStorage.setItem('cardnest_local_cards', JSON.stringify(updatedFetched));
-          }
-        } else if (fetched.length > 0) {
+        const fetched = await dbFetchCards();
+        if (fetched && fetched.length > 0) {
           setCards(fetched);
           localStorage.setItem('cardnest_local_cards', JSON.stringify(fetched));
         } else {
-          // If both database and local storage are empty, seed with default mock data if authenticated
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user) {
-            console.log('Seeding Supabase database with default digital business cards...');
-            for (const card of mockCards) {
-              try {
-                await dbSaveCard(card);
-              } catch (saveErr) {
-                console.error(`Auto-sync seed failed for card ${card.id}:`, saveErr);
-              }
-            }
-            const seeded = await dbFetchCards();
-            if (seeded && seeded.length > 0) {
-              setCards(seeded);
-              localStorage.setItem('cardnest_local_cards', JSON.stringify(seeded));
+          // If server/database is empty, seed with default mock cards
+          for (const card of mockCards) {
+            try {
+              await dbSaveCard(card);
+            } catch (saveErr) {
+              console.error(`Auto-sync seed failed for card ${card.id}:`, saveErr);
             }
           }
+          const seeded = await dbFetchCards();
+          if (seeded && seeded.length > 0) {
+            setCards(seeded);
+            localStorage.setItem('cardnest_local_cards', JSON.stringify(seeded));
+          }
         }
-        
-
 
         setDbError(null);
       } catch (err: any) {
-        // Silently catch unauthenticated listing errors as guests might not have full select list access
-        console.warn('Syncing/listing cards from Supabase failed or was restricted:', err.message);
+        console.warn('Listing cards from server/database failed:', err.message);
       } finally {
         setDbLoading(false);
       }
@@ -294,26 +256,12 @@ export default function App() {
     };
   }, []);
 
-  // Fetch live target card from Supabase whenever activeCardSlug changes or on mount
+  // Fetch live target card from server/database whenever activeCardSlug changes or on mount
   useEffect(() => {
     async function fetchPublicCard() {
       if (!activeCardSlug) return;
       
       setPublicCardError(null);
-      
-      if (!isSupabaseConfigured) {
-        // If Supabase is not configured, we look in local storage cards
-        const localFound = cards.find(c => c.slug.toLowerCase() === activeCardSlug.toLowerCase());
-        if (!localFound) {
-          setPublicCardError(
-            `Database Connection Missing: Supabase is NOT configured in this environment.\n\n` +
-            `Since the cloud database is disconnected, the app fell back to Local Sandbox mode. ` +
-            `A guest user's local storage is empty, so card "${activeCardSlug}" could not be found.\n\n` +
-            `💡 HOW TO FIX: You must add "VITE_SUPABASE_URL" and "VITE_SUPABASE_ANON_KEY" to your deployment environment variables (e.g., in your Vercel project settings or .env file) to connect your live Supabase database.`
-          );
-        }
-        return;
-      }
       
       try {
         const fetchedCard = await dbFetchCardBySlug(activeCardSlug);
@@ -325,7 +273,11 @@ export default function App() {
             return updated;
           });
         } else {
-          setPublicCardError(`Card not found. No digital business card with slug "${activeCardSlug}" was found in your Supabase "cards" table.`);
+          // Fallback search in currently loaded cards
+          const localFound = cards.find(c => c.slug.toLowerCase() === activeCardSlug.toLowerCase() || c.id === activeCardSlug);
+          if (!localFound) {
+            setPublicCardError(`Card not found. No digital business card with slug "${activeCardSlug}" was found.`);
+          }
         }
       } catch (err: any) {
         console.error(`Failed to load target card "${activeCardSlug}" directly:`, err);
@@ -334,7 +286,7 @@ export default function App() {
     }
     
     fetchPublicCard();
-  }, [activeCardSlug, isSupabaseConfigured]);
+  }, [activeCardSlug]);
 
   // Synchronize browser address bar with the current application view / slug
   useEffect(() => {
