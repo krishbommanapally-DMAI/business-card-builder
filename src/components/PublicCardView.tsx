@@ -233,14 +233,14 @@ END:VCARD`;
       {/* Primary Card View Sheet */}
       <main 
         style={{ borderRadius: card.theme.borderRadius === 'full' ? '32px' : card.theme.borderRadius === 'none' ? '0px' : '24px' }}
-        className={`w-full max-w-md mt-4 sm:mt-6 bg-white border border-slate-200/80 shadow-2xl relative z-10 overflow-hidden flex flex-col justify-start shrink-0 ${card.theme.darkMode ? 'bg-slate-950 border-white/10 text-white' : 'bg-white text-slate-900'}`}
+        className={`w-full max-w-md mt-6 bg-white border border-slate-200/50 shadow-2xl relative z-10 overflow-hidden flex flex-col justify-start shrink-0 ${card.theme.darkMode ? 'bg-slate-950 border-white/5 text-white' : 'bg-white text-slate-800'}`}
       >
         
         {/* HERO SECTION CONTAINER */}
         {card.hero.enabled && card.hero.type !== 'none' && (
           <div 
             style={{
-              height: card.hero.height === 'small' ? '130px' : card.hero.height === 'large' ? '240px' : '185px',
+              height: card.hero.height === 'small' ? '120px' : card.hero.height === 'large' ? '220px' : '170px',
               background: card.hero.type === 'gradient'
                 ? `linear-gradient(135deg, ${card.hero.gradientStart || '#3B82F6'}, ${card.hero.gradientEnd || '#1E3A8A'})`
                 : card.hero.solidColor || card.theme.primaryColor
@@ -263,38 +263,38 @@ END:VCARD`;
         )}
 
         {/* OVERLAPPING AVATAR BLOCK */}
-        <div className="flex flex-col items-center -mt-14 px-6 pb-4 shrink-0 text-center relative z-10">
+        <div className="flex flex-col items-center -mt-12 px-6 pb-4 shrink-0 text-center relative z-10">
           <img 
             src={card.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
             style={{
-              borderWidth: `${card.avatar.borderWidth || 4}px`,
-              borderColor: card.avatar.borderColor || '#FFFFFF',
-              boxShadow: card.avatar.shadow === 'glow' ? `0 0 25px ${card.theme.primaryColor}` : '0 12px 20px -3px rgba(0,0,0,0.15)'
+              borderWidth: `${card.avatar.borderWidth}px`,
+              borderColor: card.avatar.borderColor,
+              boxShadow: card.avatar.shadow === 'glow' ? `0 0 20px ${card.theme.primaryColor}` : '0 10px 15px -3px rgba(0,0,0,0.1)'
             }}
-            className="w-28 h-28 rounded-full object-cover shadow-xl"
+            className="w-24 h-24 rounded-full object-cover shadow-lg"
             alt="profile logo"
           />
-          <h2 className="text-2xl sm:text-3xl font-display font-black mt-3.5 tracking-tight text-slate-950 dark:text-white leading-tight">
+          <h2 className="text-2xl font-display font-extrabold mt-3 tracking-tight">
             {card.profile.prefix && `${card.profile.prefix} `}{card.profile.firstName} {card.profile.lastName}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 font-extrabold mt-1">{card.profile.designation}</p>
-          <p className="text-base sm:text-lg font-black mt-1 tracking-tight" style={{ color: card.theme.primaryColor }}>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold mt-0.5">{card.profile.designation}</p>
+          <p className="text-base font-extrabold mt-0.5 tracking-tight" style={{ color: card.theme.primaryColor }}>
             {card.profile.company}
           </p>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-3 italic px-4 leading-relaxed font-semibold max-w-sm">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 italic px-4 leading-relaxed max-w-sm">
             "{card.profile.tagline || 'Tagline placeholder'}"
           </p>
         </div>
 
         {/* QUICK DIRECT CONTACT GRID */}
-        <div className="grid grid-cols-4 gap-2.5 px-6 shrink-0 mb-6">
+        <div className="grid grid-cols-4 gap-2 px-6 shrink-0 mb-6">
           {card.contact.phone && (
             <a 
               href={`tel:${card.contact.phone}`}
-              className="bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 py-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             >
-              <Phone size={20} className="text-slate-700 dark:text-slate-200" style={{ color: card.theme.primaryColor }} />
-              <span className="text-xs font-black text-slate-900 dark:text-slate-100">Call</span>
+              <Phone size={18} className="text-slate-500" style={{ color: card.theme.primaryColor }} />
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Call</span>
             </a>
           )}
           {card.contact.whatsapp && (
@@ -302,49 +302,49 @@ END:VCARD`;
               href={`https://wa.me/${card.contact.whatsapp.replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noreferrer"
-              className="bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 py-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             >
-              <MessageSquare size={20} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-black text-slate-900 dark:text-slate-100">WhatsApp</span>
+              <MessageSquare size={18} className="text-emerald-500" />
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">WhatsApp</span>
             </a>
           )}
           {card.contact.email && (
             <a 
               href={`mailto:${card.contact.email}`}
-              className="bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 py-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
             >
-              <Mail size={20} className="text-slate-700 dark:text-slate-200" style={{ color: card.theme.primaryColor }} />
-              <span className="text-xs font-black text-slate-900 dark:text-slate-100">Email</span>
+              <Mail size={18} className="text-slate-500" style={{ color: card.theme.primaryColor }} />
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Email</span>
             </a>
           )}
           <button 
             onClick={handleDownloadVCard}
-            className="bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 py-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm active:scale-95"
+            className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
           >
-            <Download size={20} className="text-slate-700 dark:text-slate-200" style={{ color: card.theme.primaryColor }} />
-            <span className="text-xs font-black text-slate-900 dark:text-slate-100">Save vCard</span>
+            <Download size={18} className="text-slate-500" style={{ color: card.theme.primaryColor }} />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Save vCard</span>
           </button>
         </div>
 
         {/* CORE DETAILS COLLAPSIBLE DESCRIPTION */}
-        <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10">
-          <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">Biography</span>
-          <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed font-semibold">
+        <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5">
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Biography</span>
+          <p className="text-sm text-slate-700 dark:text-slate-200 mt-2 leading-relaxed font-medium">
             {card.profile.about}
           </p>
         </div>
 
         {/* SERVICES OFFERED */}
         {card.services.length > 0 && (
-          <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col gap-3.5">
-            <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">My Services</span>
-            <div className="flex flex-col gap-3">
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">My Services</span>
+            <div className="flex flex-col gap-2.5">
               {card.services.map((s) => (
-                <div key={s.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 hover:shadow-md transition-all">
-                  <h4 className="font-extrabold text-sm sm:text-base text-slate-950 dark:text-white flex items-center gap-2">
-                    <Sparkles size={16} style={{ color: card.theme.primaryColor }} /> {s.title}
+                <div key={s.id} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 hover:shadow-sm transition-all">
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Sparkles size={15} style={{ color: card.theme.primaryColor }} /> {s.title}
                   </h4>
-                  <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed font-semibold">
+                  <p className="text-slate-600 dark:text-slate-300 text-sm mt-1.5 leading-relaxed font-medium">
                     {s.description}
                   </p>
                 </div>
@@ -355,17 +355,17 @@ END:VCARD`;
 
         {/* E-COMMERCE PRODUCTS CART */}
         {card.products.length > 0 && (
-          <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col gap-3.5">
-            <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Store Products</span>
-            <div className="grid grid-cols-1 gap-3.5">
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Store Products</span>
+            <div className="grid grid-cols-1 gap-3">
               {card.products.map((p) => (
-                <div key={p.id} className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between hover:shadow-md transition-all gap-3.5">
+                <div key={p.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 flex flex-col justify-between hover:shadow-sm transition-all gap-3">
                   <div>
                     <div className="flex items-center justify-between gap-4">
-                      <h4 className="font-black text-sm sm:text-base text-slate-950 dark:text-white">{p.title}</h4>
-                      <span className="text-sm font-black text-indigo-700 dark:text-indigo-300 shrink-0 bg-indigo-50 dark:bg-indigo-950/80 px-3 py-1 rounded-xl border border-indigo-200 dark:border-indigo-800">{p.price}</span>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">{p.title}</h4>
+                      <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 shrink-0 bg-white dark:bg-white/10 px-2.5 py-1 rounded border dark:border-white/5">{p.price}</span>
                     </div>
-                    <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed font-semibold">
+                    <p className="text-slate-600 dark:text-slate-300 text-sm mt-1.5 leading-normal font-medium">
                       {p.description}
                     </p>
                   </div>
@@ -373,9 +373,9 @@ END:VCARD`;
                   {p.whatsappOrder && (
                     <button 
                       onClick={() => handleWhatsAppOrder(p.title, p.price)}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/15 active:scale-98 transition-all cursor-pointer"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/10 active:scale-98 transition-all cursor-pointer"
                     >
-                      <ShoppingBag size={16} /> Buy via WhatsApp
+                      <ShoppingBag size={15} /> Buy via WhatsApp
                     </button>
                   )}
                 </div>
@@ -386,17 +386,17 @@ END:VCARD`;
 
         {/* PROGRESSIVE SKILLS */}
         {card.skills.length > 0 && (
-          <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col gap-3.5">
-            <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Technical Deliverables</span>
-            <div className="flex flex-col gap-3.5">
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Technical Deliverables</span>
+            <div className="flex flex-col gap-3">
               {card.skills.map((s) => (
                 <div key={s.id}>
-                  <div className="flex justify-between text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 mb-1.5">
+                  <div className="flex justify-between text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     <span>{s.name}</span>
                     <span>{s.percentage}%</span>
                   </div>
-                  <div className="w-full bg-slate-200/80 dark:bg-white/10 h-3 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500" style={{ backgroundColor: card.theme.primaryColor, width: `${s.percentage}%` }}></div>
+                  <div className="w-full bg-slate-100 dark:bg-white/10 h-2.5 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ backgroundColor: card.theme.primaryColor, width: `${s.percentage}%` }}></div>
                   </div>
                 </div>
               ))}
@@ -406,19 +406,19 @@ END:VCARD`;
 
         {/* SOCIAL LINK CAROUSEL GRID */}
         {card.socialLinks.length > 0 && (
-          <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col gap-3.5">
-            <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Find Me Elsewhere</span>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Find Me Elsewhere</span>
+            <div className="grid grid-cols-2 gap-2.5">
               {card.socialLinks.map((link) => (
                 <a 
                   key={link.id} 
                   href={link.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-3.5 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl flex items-center gap-3 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 shadow-sm active:scale-95"
+                  className="p-3 bg-slate-50 dark:bg-white/5 border dark:border-white/5 rounded-2xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all font-bold text-sm"
                 >
-                  <Smartphone size={18} className="text-indigo-600 dark:text-indigo-400" />
-                  <span className="capitalize">{link.platform}</span>
+                  <Smartphone size={16} className="text-indigo-500" />
+                  <span className="capitalize text-slate-700 dark:text-slate-300">{link.platform}</span>
                 </a>
               ))}
             </div>
@@ -426,11 +426,11 @@ END:VCARD`;
         )}
 
         {/* APPOINTMENT SCHEDULER WIDGET */}
-        <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col gap-3.5">
-          <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Appointment Slots</span>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-semibold">Select a time slot below to secure your 15-minute consultation.</p>
+        <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Appointment Slots</span>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Select a time slot below to secure your 15-minute consultation.</p>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {mockTimeSlots.map((slot) => (
               <button
                 key={slot.id}
@@ -440,7 +440,7 @@ END:VCARD`;
                   setSelectedSlot(slot.time);
                   setAppointmentModalOpen(true);
                 }}
-                className={`p-3.5 text-xs sm:text-sm font-extrabold border-2 rounded-2xl transition-all cursor-pointer ${!slot.available ? 'bg-slate-100 dark:bg-white/5 border-slate-200/50 text-slate-400 line-through cursor-not-allowed' : selectedSlot === slot.time ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 text-indigo-950 dark:text-indigo-200' : 'bg-slate-100/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 hover:border-indigo-400'}`}
+                className={`p-3 text-sm font-bold border rounded-2xl transition-all cursor-pointer ${!slot.available ? 'bg-slate-100 dark:bg-white/5 border-slate-200/50 text-slate-400 line-through cursor-not-allowed' : selectedSlot === slot.time ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950' : 'bg-slate-50 dark:bg-white/5 border-transparent text-slate-700 dark:text-slate-300 hover:border-slate-300'}`}
               >
                 {slot.time}
               </button>
@@ -450,19 +450,19 @@ END:VCARD`;
 
         {/* OFFICE DIRECT LOCATION MAP BOX */}
         {card.contact.address && (
-          <div className="px-6 py-5 border-t border-slate-200/80 dark:border-white/10 flex flex-col gap-3.5">
-            <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Office Location</span>
-            <div className="bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 flex gap-3.5 items-start">
-              <MapPin size={22} className="text-red-500 shrink-0 mt-0.5" />
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
+            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Office Location</span>
+            <div className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 rounded-2xl p-4 flex gap-3.5 items-start">
+              <MapPin size={20} className="text-red-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-relaxed font-extrabold">
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-normal font-semibold">
                   {card.contact.address}
                 </p>
                 <a 
                   href="https://maps.google.com" 
                   target="_blank" 
                   rel="noreferrer" 
-                  className="text-xs font-black text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1 mt-2.5"
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5 mt-2"
                 >
                   Get GPS Driving Directions <ChevronRight size={14} />
                 </a>
@@ -472,18 +472,18 @@ END:VCARD`;
         )}
 
         {/* CARD FOOTER & QR CODE POPUP */}
-        <div className="bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200/80 dark:border-white/10 p-6 text-center">
-          <div className="inline-flex p-4 bg-white border border-slate-200 rounded-3xl mb-4 shadow-md">
-            <QrCode size={150} className="text-slate-900" />
+        <div className="bg-slate-50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 p-6 text-center">
+          <div className="inline-flex p-3.5 bg-white border border-slate-200 rounded-3xl mb-4 shadow-sm">
+            <QrCode size={130} className="text-slate-900" />
           </div>
-          <h4 className="font-display font-black text-base sm:text-lg text-slate-950 dark:text-white leading-tight">
+          <h4 className="font-display font-extrabold text-base text-slate-900 dark:text-white leading-tight">
             {card.qrCode.frameText || 'SCAN TO DOWNLOAD CONTACT'}
           </h4>
-          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-medium max-w-xs mx-auto">
-            Scan with any smartphone camera to instantly save contact details to your native address book.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed max-w-xs mx-auto">
+            Scan with any smartphone camera to instantly save my contact details to your native address book.
           </p>
 
-          <span className="text-[10px] text-slate-400 font-extrabold block mt-8 uppercase tracking-widest">
+          <span className="text-[10px] text-slate-400 font-bold block mt-8 uppercase tracking-widest">
             Powered by Digital Moksha
           </span>
         </div>
