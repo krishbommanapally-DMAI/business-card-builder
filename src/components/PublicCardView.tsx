@@ -13,6 +13,7 @@ import {
 import { DigitalCard } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
 import GallerySlideshow from './GallerySlideshow';
+import { QRCodeView } from './QRCodeView';
 
 interface PublicCardViewProps {
   card?: DigitalCard;
@@ -490,14 +491,22 @@ END:VCARD`;
 
             {/* CARD FOOTER & QR CODE POPUP */}
             <div className={`p-6 text-center border-t ${isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
-              <div className="inline-flex p-3.5 bg-white border border-slate-200 rounded-3xl mb-4 shadow-sm">
-                <QrCode size={130} className="text-slate-900" />
+              <div className="mb-4">
+                <QRCodeView 
+                  value={window.location.origin + '/' + card.slug}
+                  size={150}
+                  foregroundColor={card.qrCode?.foregroundColor || '#0f172a'}
+                  backgroundColor={card.qrCode?.backgroundColor || '#ffffff'}
+                  logoUrl={card.qrCode?.includeLogo ? (card.companyLogo?.url || card.avatar?.url) : undefined}
+                  showDownload={true}
+                  downloadFileName={`${card.slug}_qr.png`}
+                />
               </div>
               <h4 className={`font-display font-extrabold text-base leading-tight ${isDark ? 'text-white' : 'text-slate-950'}`}>
-                {card.qrCode.frameText || 'SCAN TO DOWNLOAD CONTACT'}
+                {card.qrCode?.frameText || 'SCAN TO VIEW BUSINESS CARD'}
               </h4>
               <p className={`text-xs mt-1 leading-relaxed max-w-xs mx-auto font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                Scan with any smartphone camera to instantly save my contact details to your native address book.
+                Scan with any smartphone camera to instantly open and save my digital business card.
               </p>
 
               <span className={`text-[10px] font-bold block mt-8 uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
