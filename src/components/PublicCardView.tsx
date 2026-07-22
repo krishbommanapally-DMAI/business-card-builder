@@ -328,8 +328,8 @@ END:VCARD`;
 
         {/* CORE DETAILS COLLAPSIBLE DESCRIPTION */}
         <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Biography</span>
-          <p className="text-sm text-slate-700 dark:text-slate-200 mt-2 leading-relaxed font-medium">
+          <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Biography</span>
+          <p className="text-base text-slate-900 dark:text-slate-100 mt-2 leading-relaxed font-medium">
             {card.profile.about}
           </p>
         </div>
