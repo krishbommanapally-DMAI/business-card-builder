@@ -317,71 +317,112 @@ function extractColumnNameFromError(message: string): string | null {
 }
 
 /**
- * Fetches all digital cards from Supabase, mapping them to standard structures.
+ * Fetches all digital cards from central server storage and Supabase database.
  */
 export async function dbFetchCards(): Promise<DigitalCard[]> {
-  if (!isSupabaseConfigured) return [];
-  
+  let serverCards: DigitalCard[] = [];
   try {
-    const { data, error } = await supabase
-      .from('cards')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error('Supabase query error fetching cards:', error.message);
-      throw error;
+    const res = await fetch('/api/cards');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.cards)) {
+        serverCards = data.cards;
+      }
     }
-    
-    return (data || []).map(mapRowToCard);
   } catch (err) {
-    console.error('Failed to fetch cards from Supabase, falling back.', err);
-    throw err;
+    console.warn('Could not fetch cards from server API:', err);
   }
-}
 
-/**
- * Fetches a single digital card by its slug from Supabase.
- */
-export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | null> {
-  if (!isSupabaseConfigured) return null;
-  
-  try {
-    // 1. Try matching slug first
-    let { data, error } = await supabase
-      .from('cards')
-      .select('*')
-      .ilike('slug', slug)
-      .maybeSingle();
-      
-    // 2. Fallback: try matching by exact ID or converted deterministic UUID
-    if (!data) {
-      const dbCardId = isValidUUID(slug) ? slug : generateDeterministicUUID('card', slug);
-      const { data: idData } = await supabase
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
         .from('cards')
         .select('*')
-        .or(`id.eq.${slug},id.eq.${dbCardId}`)
-        .maybeSingle();
-      if (idData) data = idData;
+        .order('created_at', { ascending: false });
+        
+      if (!error && data && data.length > 0) {
+        const sbCards = data.map(mapRowToCard);
+        // Combine server and Supabase cards, preferring live Supabase if available
+        const cardMap = new Map<string, DigitalCard>();
+        serverCards.forEach(c => cardMap.set(c.id, c));
+        sbCards.forEach(c => cardMap.set(c.id, c));
+        return Array.from(cardMap.values());
+      }
+    } catch (err) {
+      console.warn('Failed to fetch cards from Supabase, returning server cards.', err);
     }
-
-    if (error && !data) {
-      console.error(`Supabase query error fetching card with slug ${slug}:`, error.message);
-    }
-    
-    return data ? mapRowToCard(data) : null;
-  } catch (err) {
-    console.error(`Failed to fetch card with slug ${slug} from Supabase:`, err);
-    throw err;
   }
+
+  return serverCards;
 }
 
 /**
- * Saves (inserts or updates) a digital card in Supabase.
+ * Fetches a single digital card by its slug from server API or Supabase.
+ */
+export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | null> {
+  if (!slug) return null;
+  const cleanSlug = slug.trim().toLowerCase();
+
+  // 1. Try server API first
+  try {
+    const res = await fetch(`/api/cards/${encodeURIComponent(cleanSlug)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success && data.card) {
+        return data.card as DigitalCard;
+      }
+    }
+  } catch (err) {
+    console.warn(`Server API lookup failed for slug "${cleanSlug}":`, err);
+  }
+
+  // 2. Query Supabase if configured
+  if (isSupabaseConfigured) {
+    try {
+      let { data, error } = await supabase
+        .from('cards')
+        .select('*')
+        .ilike('slug', cleanSlug)
+        .maybeSingle();
+        
+      if (!data) {
+        const dbCardId = isValidUUID(cleanSlug) ? cleanSlug : generateDeterministicUUID('card', cleanSlug);
+        const { data: idData } = await supabase
+          .from('cards')
+          .select('*')
+          .or(`id.eq.${cleanSlug},id.eq.${dbCardId}`)
+          .maybeSingle();
+        if (idData) data = idData;
+      }
+
+      if (data) {
+        return mapRowToCard(data);
+      }
+    } catch (err) {
+      console.warn(`Supabase lookup failed for slug "${cleanSlug}":`, err);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Saves (inserts or updates) a digital card in central server storage and Supabase.
  * Implements an auto-healing retry mechanism that filters out columns not present in the user's DB,
  * and handles common security or structural database blocks.
  */
 export async function dbSaveCard(card: DigitalCard): Promise<void> {
+  // 1. Save to central Express server storage
+  try {
+    await fetch('/api/cards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ card })
+    });
+  } catch (serverErr) {
+    console.warn('Failed to save card to server API:', serverErr);
+  }
+
   if (!isSupabaseConfigured) return;
   
   const payload = mapCardToRow(card);
@@ -537,9 +578,17 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
 }
 
 /**
- * Deletes a digital card from Supabase.
+ * Deletes a digital card from central server storage and Supabase.
  */
 export async function dbDeleteCard(cardId: string): Promise<void> {
+  try {
+    await fetch(`/api/cards/${encodeURIComponent(cardId)}`, {
+      method: 'DELETE'
+    });
+  } catch (err) {
+    console.warn('Failed to delete card from server API:', err);
+  }
+
   if (!isSupabaseConfigured) return;
   
   try {
