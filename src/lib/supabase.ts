@@ -338,72 +338,86 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
   if (!isSupabaseConfigured) return;
   
   const payload = mapCardToRow(card);
-  const dbCardId = payload.id; // Correct deterministic UUID matching database schema!
+  const dbCardId = payload.id; // Guaranteed valid UUID
   const maxRetries = 25;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      // Check if the card already exists using either the deterministic UUID or original ID
-      const { data: existing, error: checkError } = await supabase
+      // 1. Primary method: Try upsert by ID
+      const { error: upsertError } = await supabase
+        .from('cards')
+        .upsert(payload, { onConflict: 'id' });
+        
+      if (!upsertError) {
+        return; // Upsert succeeded!
+      }
+
+      const errMsg = upsertError.message || '';
+
+      // Auto-heal missing column errors
+      const missingColumn = extractColumnNameFromError(errMsg);
+      if (missingColumn && (payload[missingColumn] !== undefined || payload[toCamelCase(missingColumn)] !== undefined)) {
+        console.warn(`[Auto-healing] Removing column "${missingColumn}" from payload and retrying...`);
+        delete payload[missingColumn];
+        delete payload[toCamelCase(missingColumn)];
+        continue;
+      }
+
+      // Handle duplicate slug conflicts by generating a unique suffix
+      if (errMsg.includes('cards_slug_key') || (errMsg.includes('slug') && (errMsg.includes('duplicate') || errMsg.includes('unique')))) {
+        payload.slug = `${payload.slug}-${Math.floor(Math.random() * 10000)}`;
+        console.warn(`[Auto-healing] Duplicate slug detected. Adjusted slug to "${payload.slug}" and retrying...`);
+        continue;
+      }
+
+      // 2. Fallback: Manual select -> update or insert
+      const { data: existing } = await supabase
         .from('cards')
         .select('id')
-        .or(`id.eq.${dbCardId},id.eq.${card.id}`)
+        .eq('id', dbCardId)
         .maybeSingle();
-        
-      if (checkError) {
-        // If query fails due to type error on card.id, retry checking with dbCardId directly
-        const { data: fallbackExisting } = await supabase
-          .from('cards')
-          .select('id')
-          .eq('id', dbCardId)
-          .maybeSingle();
-        if (fallbackExisting) {
-          const { error: updateError } = await supabase
-            .from('cards')
-            .update(payload)
-            .eq('id', dbCardId);
-          if (updateError) throw updateError;
-          break;
-        }
-      }
-      
+
       if (existing) {
-        // Perform Update
         const { error: updateError } = await supabase
           .from('cards')
           .update(payload)
-          .eq('id', existing.id || dbCardId);
-          
-        if (updateError) {
-          const missingColumn = extractColumnNameFromError(updateError.message);
-          if (missingColumn && (payload[missingColumn] !== undefined || payload[toCamelCase(missingColumn)] !== undefined)) {
-            console.warn(`[Auto-healing] Removing column "${missingColumn}" from update payload and retrying...`);
-            delete payload[missingColumn];
-            delete payload[toCamelCase(missingColumn)];
-            continue; // retry
-          }
-          throw updateError;
+          .eq('id', dbCardId);
+
+        if (!updateError) return;
+
+        const col = extractColumnNameFromError(updateError.message);
+        if (col && (payload[col] !== undefined || payload[toCamelCase(col)] !== undefined)) {
+          delete payload[col];
+          delete payload[toCamelCase(col)];
+          continue;
         }
+        throw updateError;
       } else {
-        // Perform Insert
         const { error: insertError } = await supabase
           .from('cards')
           .insert([payload]);
-          
-        if (insertError) {
-          const missingColumn = extractColumnNameFromError(insertError.message);
-          if (missingColumn && (payload[missingColumn] !== undefined || payload[toCamelCase(missingColumn)] !== undefined)) {
-            console.warn(`[Auto-healing] Removing column "${missingColumn}" from insert payload and retrying...`);
-            delete payload[missingColumn];
-            delete payload[toCamelCase(missingColumn)];
-            continue; // retry
-          }
-          throw insertError;
+
+        if (!insertError) return;
+
+        const col = extractColumnNameFromError(insertError.message);
+        if (col && (payload[col] !== undefined || payload[toCamelCase(col)] !== undefined)) {
+          delete payload[col];
+          delete payload[toCamelCase(col)];
+          continue;
         }
+
+        // If insert failed because row actually exists, fallback to update
+        if (insertError.code === '23505' || insertError.message.includes('duplicate key') || insertError.message.includes('already exists')) {
+          const { error: fallbackUpdateError } = await supabase
+            .from('cards')
+            .update(payload)
+            .eq('id', dbCardId);
+          if (!fallbackUpdateError) return;
+          throw fallbackUpdateError;
+        }
+
+        throw insertError;
       }
-      
-      // If we reach here, save was successful!
-      break;
     } catch (err: any) {
       const errMsg = err.message || '';
       
@@ -438,8 +452,6 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
         console.error('Failed to save card in Supabase after multiple auto-healing retries:', err);
         throw err;
       }
-      
-      throw err;
     }
   }
 }
