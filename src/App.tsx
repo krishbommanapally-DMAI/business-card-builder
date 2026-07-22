@@ -577,13 +577,11 @@ export default function App() {
       return updated;
     });
     
-    if (isSupabaseConfigured) {
-      try {
-        await dbSaveCard(updatedCard);
-      } catch (err: any) {
-        console.error('Failed to sync updated card to Supabase:', err);
-        setDbError(`Save error: ${err.message || err}`);
-      }
+    try {
+      await dbSaveCard(updatedCard);
+    } catch (err: any) {
+      console.error('Failed to sync updated card:', err);
+      setDbError(`Save error: ${err.message || err}`);
     }
   };
 
@@ -595,13 +593,11 @@ export default function App() {
       return updated;
     });
     
-    if (isSupabaseConfigured) {
-      try {
-        await dbSaveCard(newCard);
-      } catch (err: any) {
-        console.error('Failed to sync new card to Supabase:', err);
-        setDbError(`Creation error: ${err.message || err}`);
-      }
+    try {
+      await dbSaveCard(newCard);
+    } catch (err: any) {
+      console.error('Failed to sync new card:', err);
+      setDbError(`Creation error: ${err.message || err}`);
     }
   };
 
@@ -613,13 +609,11 @@ export default function App() {
       return updated;
     });
     
-    if (isSupabaseConfigured) {
-      try {
-        await dbDeleteCard(cardId);
-      } catch (err: any) {
-        console.error('Failed to delete card from Supabase:', err);
-        setDbError(`Deletion error: ${err.message || err}`);
-      }
+    try {
+      await dbDeleteCard(cardId);
+    } catch (err: any) {
+      console.error('Failed to delete card:', err);
+      setDbError(`Deletion error: ${err.message || err}`);
     }
   };
 
