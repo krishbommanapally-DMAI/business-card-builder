@@ -484,7 +484,7 @@ END:VCARD`;
           </p>
 
           <span className="text-[9px] text-slate-400 font-bold block mt-8 uppercase tracking-widest">
-            Powered by vcard-cyan.vercel.app
+            Powered by Digital Moksha
           </span>
         </div>
 
