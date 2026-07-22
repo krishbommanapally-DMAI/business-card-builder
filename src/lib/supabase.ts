@@ -113,15 +113,34 @@ export function mapRowToCard(row: any): DigitalCard {
     try { socialsData = JSON.parse(socialsData); } catch (e) { socialsData = []; }
   }
 
-  let heroData = mods.hero || row.hero_config || row.hero || { enabled: true, type: 'gradient', gradientStart: '#3B82F6', gradientEnd: '#1E3A8A' };
-  if (typeof heroData === 'string') {
-    try { heroData = JSON.parse(heroData); } catch (e) { heroData = {}; }
+  let heroRaw: any = (mods && mods.hero && Object.keys(mods.hero).length > 0) 
+    ? mods.hero 
+    : (row.hero_config || row.hero);
+  if (typeof heroRaw === 'string') {
+    try { heroRaw = JSON.parse(heroRaw); } catch (e) { heroRaw = {}; }
+  }
+  if (!heroRaw || typeof heroRaw !== 'object') {
+    heroRaw = {};
   }
 
-  let galleryData = Array.isArray(mods.gallery) ? mods.gallery : (Array.isArray(row.gallery) ? row.gallery : []);
-  if (typeof galleryData === 'string') {
-    try { galleryData = JSON.parse(galleryData); } catch (e) { galleryData = []; }
+  const heroData = {
+    enabled: true,
+    type: 'gradient',
+    height: 'medium',
+    gradientStart: '#3B82F6',
+    gradientEnd: '#1E3A8A',
+    solidColor: '#0f172a',
+    mediaUrl: '',
+    ...heroRaw
+  };
+
+  let galleryRaw: any = (mods && mods.gallery !== undefined) 
+    ? mods.gallery 
+    : (row.gallery !== undefined ? row.gallery : []);
+  if (typeof galleryRaw === 'string') {
+    try { galleryRaw = JSON.parse(galleryRaw); } catch (e) { galleryRaw = []; }
   }
+  const galleryData = Array.isArray(galleryRaw) ? galleryRaw : [];
 
   return {
     id: row.id,
@@ -250,20 +269,24 @@ function toCamelCase(str: string): string {
 function extractColumnNameFromError(message: string): string | null {
   if (!message) return null;
   
-  // Match: column "column_name" of relation "cards" does not exist
-  let match = message.match(/column\s+"([^"]+)"\s+of\s+relation/i);
-  if (match) return match[1];
-  
-  // Match: Could not find column "column_name" in table "cards"
-  match = message.match(/Could\s+not\s+find\s+column\s+"([^"]+)"/i);
+  // Could not find the 'hero_config' column of 'cards' in the schema cache
+  let match = message.match(/Could\s+not\s+find\s+the\s+['"]([^'"]+)['"]\s+column/i);
   if (match) return match[1];
 
-  // Match: column "column_name" does not exist
-  match = message.match(/column\s+"([^"]+)"\s+does\s+not\s+exist/i);
+  // Could not find column "column_name" in table "cards"
+  match = message.match(/Could\s+not\s+find\s+column\s+['"]([^'"]+)['"]/i);
   if (match) return match[1];
 
-  // Match without quotes: column column_name does not exist
-  match = message.match(/column\s+([a-zA-Z0-9_-]+)\s+does\s+not\s+exist/i);
+  // column "column_name" of relation "cards" does not exist
+  match = message.match(/column\s+['"]([^'"]+)['"]\s+of\s+relation/i);
+  if (match) return match[1];
+
+  // column "column_name" does not exist
+  match = message.match(/column\s+['"]?([a-zA-Z0-9_-]+)['"]?\s+does\s+not\s+exist/i);
+  if (match) return match[1];
+
+  // 'column_name' column in schema cache
+  match = message.match(/['"]([^'"]+)['"]\s+column/i);
   if (match) return match[1];
 
   return null;
