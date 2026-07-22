@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { DigitalCard } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
+import GallerySlideshow from './GallerySlideshow';
 
 interface PublicCardViewProps {
   card?: DigitalCard;
@@ -246,12 +247,17 @@ END:VCARD`;
                   height: card.hero.height === 'small' ? '120px' : card.hero.height === 'large' ? '220px' : '170px',
                   background: card.hero.type === 'gradient'
                     ? `linear-gradient(135deg, ${card.hero.gradientStart || '#3B82F6'}, ${card.hero.gradientEnd || '#1E3A8A'})`
-                    : card.hero.solidColor || card.theme.primaryColor
+                    : card.hero.type === 'solid'
+                    ? (card.hero.solidColor || card.theme.primaryColor)
+                    : 'none'
                 }}
                 className="w-full relative shrink-0 overflow-hidden"
               >
                 {card.hero.type === 'image' && card.hero.mediaUrl && (
                   <img src={card.hero.mediaUrl} className="absolute inset-0 w-full h-full object-cover" alt="Hero background" />
+                )}
+                {card.hero.type === 'video' && card.hero.mediaUrl && (
+                  <video src={card.hero.mediaUrl} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
                 )}
                 {/* Dark blur overlay */}
                 <div 
@@ -266,7 +272,7 @@ END:VCARD`;
             )}
 
             {/* OVERLAPPING AVATAR BLOCK */}
-            <div className="flex flex-col items-center -mt-12 px-6 pb-4 shrink-0 text-center relative z-10">
+            <div className={`flex flex-col items-center px-6 pb-4 shrink-0 text-center relative z-10 ${card.hero.enabled && card.hero.type !== 'none' ? '-mt-12' : 'pt-8'}`}>
               <img 
                 src={card.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
                 style={{
@@ -353,6 +359,14 @@ END:VCARD`;
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* GALLERY SLIDESHOW */}
+            {card.gallery && card.gallery.length > 0 && (
+              <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Gallery Showcase</span>
+                <GallerySlideshow items={card.gallery} isDark={isDark} primaryColor={card.theme.primaryColor} />
               </div>
             )}
 
