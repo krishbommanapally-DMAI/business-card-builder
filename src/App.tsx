@@ -259,12 +259,40 @@ export default function App() {
 
   // Parse path, query, or hash on mount/URL change to allow robust deep-linking without 404 errors
   useEffect(() => {
-    const targetSlug = getSlugFromUrl();
-    if (targetSlug) {
-      setActiveCardSlug(targetSlug);
-      setCurrentView('public');
-    }
-  }, []); // Run on mount to catch deep linking before any user interaction
+    const syncFromUrl = () => {
+      const targetSlug = getSlugFromUrl();
+      if (targetSlug) {
+        setActiveCardSlug(targetSlug);
+        setCurrentView('public');
+      }
+    };
+
+    syncFromUrl();
+
+    window.addEventListener('popstate', syncFromUrl);
+    window.addEventListener('hashchange', syncFromUrl);
+    
+    // Listen for storage changes across browser tabs/windows
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'cardnest_local_cards' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCards(parsed);
+          }
+        } catch (err) {
+          console.error('Error syncing cards from storage event:', err);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('popstate', syncFromUrl);
+      window.removeEventListener('hashchange', syncFromUrl);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
 
   // Fetch live target card from Supabase whenever activeCardSlug changes or on mount
   useEffect(() => {
@@ -648,7 +676,10 @@ export default function App() {
   
   // Focus card for previewing/building
   const activeBuilderCard = cards.find(c => c.id === activeCardId);
-  const activePublicCard = cards.find(c => c.slug.toLowerCase() === activeCardSlug?.toLowerCase());
+  const activePublicCard = cards.find(c => 
+    c.slug.toLowerCase() === activeCardSlug?.toLowerCase() || 
+    c.id.toLowerCase() === activeCardSlug?.toLowerCase()
+  );
 
   // Check if owner is verified
   let isActivePublicCardOwnerVerified = true;
