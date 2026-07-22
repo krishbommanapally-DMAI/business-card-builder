@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { DigitalCard, CardTheme, SocialLink, CustomButton, ServiceItem, ProductItem, SkillItem, GalleryItem } from '../types';
 import GallerySlideshow from './GallerySlideshow';
+import { QRCodeView } from './QRCodeView';
 
 interface CardBuilderProps {
   card: DigitalCard;
@@ -920,33 +921,105 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                 </div>
 
                 <div>
-                  <h3 className="font-display font-bold text-sm text-slate-900 uppercase tracking-wider mb-4">QR Framing Texts</h3>
+                  <h3 className="font-display font-bold text-sm text-slate-900 uppercase tracking-wider mb-4">QR Framing & Design Customization</h3>
                   <div className="flex flex-col gap-4 bg-slate-50 p-4 border border-slate-200 rounded-2xl">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">QR Frame Style</label>
-                      <select 
-                        value={editedCard.qrCode.frameStyle}
-                        onChange={(e) => updateCard(c => { c.qrCode.frameStyle = e.target.value as any; })}
-                        className="w-full px-3 py-2 border border-slate-200 bg-white text-slate-950 rounded-xl text-xs font-bold"
-                      >
-                        <option value="none">None</option>
-                        <option value="sleek">Sleek Frame</option>
-                        <option value="accent">Double Border Frame</option>
-                      </select>
+                    {/* Live QR Preview Box */}
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Scannable QR Preview</span>
+                      <QRCodeView 
+                        value={window.location.origin + '/' + editedCard.slug}
+                        size={160}
+                        foregroundColor={editedCard.qrCode?.foregroundColor || '#0f172a'}
+                        backgroundColor={editedCard.qrCode?.backgroundColor || '#ffffff'}
+                        logoUrl={editedCard.qrCode?.includeLogo ? (editedCard.companyLogo?.url || editedCard.avatar?.url) : undefined}
+                        showDownload={true}
+                        downloadFileName={`${editedCard.slug}_qr.png`}
+                      />
                     </div>
 
-                    {editedCard.qrCode.frameStyle !== 'none' && (
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Frame Text Call-To-Action</label>
-                        <input 
-                          type="text" 
-                          value={editedCard.qrCode.frameText || ''}
-                          onChange={(e) => updateCard(c => { c.qrCode.frameText = e.target.value; })}
-                          placeholder="SCAN MY CARD"
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-xs text-slate-950 font-bold uppercase"
-                        />
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">QR Dots Color</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="color" 
+                            value={editedCard.qrCode?.foregroundColor || editedCard.qrCode?.color || '#0f172a'}
+                            onChange={(e) => updateCard(c => { 
+                              if (!c.qrCode) c.qrCode = { enabled: true, color: '#0f172a', bgColor: '#ffffff', gradientEnabled: false, frameStyle: 'none' }; 
+                              c.qrCode.foregroundColor = e.target.value; 
+                              c.qrCode.color = e.target.value;
+                            })}
+                            className="w-9 h-9 rounded-xl border border-slate-200 bg-white cursor-pointer p-0.5"
+                          />
+                          <input 
+                            type="text" 
+                            value={editedCard.qrCode?.foregroundColor || editedCard.qrCode?.color || '#0f172a'}
+                            onChange={(e) => updateCard(c => { 
+                              if (!c.qrCode) c.qrCode = { enabled: true, color: '#0f172a', bgColor: '#ffffff', gradientEnabled: false, frameStyle: 'none' }; 
+                              c.qrCode.foregroundColor = e.target.value; 
+                              c.qrCode.color = e.target.value;
+                            })}
+                            className="w-full px-2.5 py-2 border border-slate-200 rounded-xl bg-white text-xs text-slate-950 font-mono font-bold"
+                          />
+                        </div>
                       </div>
-                    )}
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Background Color</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="color" 
+                            value={editedCard.qrCode?.backgroundColor || editedCard.qrCode?.bgColor || '#ffffff'}
+                            onChange={(e) => updateCard(c => { 
+                              if (!c.qrCode) c.qrCode = { enabled: true, color: '#0f172a', bgColor: '#ffffff', gradientEnabled: false, frameStyle: 'none' }; 
+                              c.qrCode.backgroundColor = e.target.value; 
+                              c.qrCode.bgColor = e.target.value;
+                            })}
+                            className="w-9 h-9 rounded-xl border border-slate-200 bg-white cursor-pointer p-0.5"
+                          />
+                          <input 
+                            type="text" 
+                            value={editedCard.qrCode?.backgroundColor || editedCard.qrCode?.bgColor || '#ffffff'}
+                            onChange={(e) => updateCard(c => { 
+                              if (!c.qrCode) c.qrCode = { enabled: true, color: '#0f172a', bgColor: '#ffffff', gradientEnabled: false, frameStyle: 'none' }; 
+                              c.qrCode.backgroundColor = e.target.value; 
+                              c.qrCode.bgColor = e.target.value;
+                            })}
+                            className="w-full px-2.5 py-2 border border-slate-200 rounded-xl bg-white text-xs text-slate-950 font-mono font-bold"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 block">Embed Center Logo</span>
+                        <span className="text-[10px] text-slate-500 block">Overlays your brand logo or profile avatar in the QR center</span>
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        checked={Boolean(editedCard.qrCode?.includeLogo)}
+                        onChange={(e) => updateCard(c => { 
+                          if (!c.qrCode) c.qrCode = { enabled: true, color: '#0f172a', bgColor: '#ffffff', gradientEnabled: false, frameStyle: 'none' }; 
+                          c.qrCode.includeLogo = e.target.checked; 
+                        })}
+                        className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1">Frame Text Call-To-Action</label>
+                      <input 
+                        type="text" 
+                        value={editedCard.qrCode?.frameText || ''}
+                        onChange={(e) => updateCard(c => { 
+                          if (!c.qrCode) c.qrCode = { enabled: true, color: '#0f172a', bgColor: '#ffffff', gradientEnabled: false, frameStyle: 'none' }; 
+                          c.qrCode.frameText = e.target.value; 
+                        })}
+                        placeholder="SCAN MY CARD"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-xs text-slate-950 font-bold uppercase"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1123,13 +1196,22 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
 
                     {/* Public QR Teaser */}
                     <div className="p-4 mt-auto">
-                      <div className={`border rounded-2xl p-3 flex items-center gap-3 ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
-                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-xs">
-                          <QrCode size={24} className="text-slate-900" />
-                        </div>
+                      <div className={`border rounded-2xl p-3 flex flex-col items-center gap-2 text-center ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
+                        <QRCodeView 
+                          value={window.location.origin + '/' + editedCard.slug}
+                          size={100}
+                          foregroundColor={editedCard.qrCode?.foregroundColor || '#0f172a'}
+                          backgroundColor={editedCard.qrCode?.backgroundColor || '#ffffff'}
+                          logoUrl={editedCard.qrCode?.includeLogo ? (editedCard.companyLogo?.url || editedCard.avatar?.url) : undefined}
+                          showDownload={false}
+                        />
                         <div>
-                          <h6 className={`font-bold text-[9px] leading-tight ${isDarkPreview ? 'text-white' : 'text-slate-900'}`}>Interactive Scan QR</h6>
-                          <p className={`text-[8px] leading-normal mt-0.5 ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Scans download vCard directly to contact rosters.</p>
+                          <h6 className={`font-bold text-[9px] leading-tight ${isDarkPreview ? 'text-white' : 'text-slate-950'}`}>
+                            {editedCard.qrCode?.frameText || 'SCAN TO VIEW BUSINESS CARD'}
+                          </h6>
+                          <p className={`text-[8px] leading-normal mt-0.5 ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>
+                            Scan with camera to open live card.
+                          </p>
                         </div>
                       </div>
                     </div>
