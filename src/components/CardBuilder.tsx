@@ -799,142 +799,155 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
               </div>
 
               {/* Dynamic scrollable app body */}
-              <div className={`w-full h-full rounded-[34px] overflow-y-auto overflow-x-hidden no-scrollbar text-left relative flex flex-col ${editedCard.theme.darkMode ? 'text-white bg-slate-950' : 'text-slate-800 bg-white'}`}>
-                
-                {/* Visual Hero header */}
-                {editedCard.hero.enabled && editedCard.hero.type !== 'none' && (
-                  <div 
-                    style={{
-                      height: '110px',
-                      background: editedCard.hero.type === 'gradient' 
-                        ? `linear-gradient(135deg, ${editedCard.hero.gradientStart || '#3B82F6'}, ${editedCard.hero.gradientEnd || '#1E3A8A'})`
-                        : editedCard.hero.solidColor || editedCard.theme.primaryColor
-                    }}
-                    className="w-full shrink-0 relative flex items-center justify-center"
-                  >
-                    {editedCard.hero.type === 'image' && editedCard.hero.mediaUrl && (
-                      <img src={editedCard.hero.mediaUrl} className="absolute inset-0 w-full h-full object-cover" alt="Hero" />
-                    )}
-                  </div>
-                )}
-
-                {/* Overlapping circular avatar */}
-                <div className="flex flex-col items-center -mt-10 px-4 pb-4 shrink-0 text-center relative z-10">
-                  <img 
-                    src={editedCard.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
-                    style={{
-                      borderWidth: `${editedCard.avatar.borderWidth}px`,
-                      borderColor: editedCard.avatar.borderColor,
-                      boxShadow: editedCard.avatar.shadow === 'glow' ? `0 0 15px ${editedCard.theme.primaryColor}` : '0 10px 15px -3px rgba(0,0,0,0.1)'
-                    }}
-                    className="w-20 h-20 rounded-full object-cover shadow-lg"
-                    alt="profile"
-                  />
-                  <h4 className="font-bold text-sm mt-2 leading-tight">
-                    {editedCard.profile.firstName} {editedCard.profile.lastName}
-                  </h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">{editedCard.profile.designation}</p>
-                  <p className="text-[9px] font-bold mt-0.5" style={{ color: editedCard.theme.primaryColor }}>
-                    {editedCard.profile.company}
-                  </p>
-                  <p className="text-[9px] text-slate-400 mt-2 italic px-3 max-w-xs truncate leading-normal">
-                    "{editedCard.profile.tagline || 'Tagline placeholder'}"
-                  </p>
-                </div>
-
-                {/* Action Contact buttons */}
-                <div className="grid grid-cols-4 gap-1.5 px-4 shrink-0">
-                  {editedCard.contact.phone && (
-                    <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
-                      <Smartphone size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
-                      <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">Call</span>
-                    </div>
-                  )}
-                  {editedCard.contact.whatsapp && (
-                    <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
-                      <MessageSquare size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
-                      <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">Chat</span>
-                    </div>
-                  )}
-                  {editedCard.contact.email && (
-                    <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
-                      <Link size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
-                      <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">Email</span>
-                    </div>
-                  )}
-                  <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
-                    <Download size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
-                    <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">vCard</span>
-                  </div>
-                </div>
-
-                {/* Services list */}
-                {editedCard.services.length > 0 && (
-                  <div className="px-4 py-3 flex flex-col gap-2">
-                    <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest">Services</span>
-                    {editedCard.services.map((s) => (
-                      <div key={s.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border dark:border-white/5">
-                        <h5 className="font-bold text-[10px] text-slate-800 dark:text-white leading-snug">{s.title}</h5>
-                        <p className="text-[9px] text-slate-500 mt-0.5 leading-normal">{s.description}</p>
+              {(() => {
+                const isDarkPreview = Boolean(editedCard.theme.darkMode);
+                return (
+                  <div className={`w-full h-full rounded-[34px] overflow-y-auto overflow-x-hidden no-scrollbar text-left relative flex flex-col ${isDarkPreview ? 'text-white bg-slate-950' : 'text-slate-900 bg-white'}`}>
+                    
+                    {/* Visual Hero header */}
+                    {editedCard.hero.enabled && editedCard.hero.type !== 'none' && (
+                      <div 
+                        style={{
+                          height: '110px',
+                          background: editedCard.hero.type === 'gradient' 
+                            ? `linear-gradient(135deg, ${editedCard.hero.gradientStart || '#3B82F6'}, ${editedCard.hero.gradientEnd || '#1E3A8A'})`
+                            : editedCard.hero.solidColor || editedCard.theme.primaryColor
+                        }}
+                        className="w-full shrink-0 relative flex items-center justify-center"
+                      >
+                        {editedCard.hero.type === 'image' && editedCard.hero.mediaUrl && (
+                          <img src={editedCard.hero.mediaUrl} className="absolute inset-0 w-full h-full object-cover" alt="Hero" />
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )}
 
-                {/* Products Grid list */}
-                {editedCard.products.length > 0 && (
-                  <div className="px-4 py-3 flex flex-col gap-2">
-                    <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest">Store Products</span>
-                    <div className="flex flex-col gap-2">
-                      {editedCard.products.map((p) => (
-                        <div key={p.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 flex items-center justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <h5 className="font-bold text-[10px] text-slate-800 dark:text-white leading-snug truncate">{p.title}</h5>
-                            <p className="text-[9px] text-slate-500 mt-0.5 leading-normal truncate">{p.description}</p>
-                          </div>
-                          <span className="text-[10px] font-extrabold text-slate-800 dark:text-indigo-400 bg-white dark:bg-white/10 px-2 py-1 rounded border dark:border-white/5">
-                            {p.price}
-                          </span>
+                    {/* Overlapping circular avatar */}
+                    <div className="flex flex-col items-center -mt-10 px-4 pb-4 shrink-0 text-center relative z-10">
+                      <img 
+                        src={editedCard.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
+                        style={{
+                          borderWidth: `${editedCard.avatar.borderWidth}px`,
+                          borderColor: editedCard.avatar.borderColor,
+                          boxShadow: editedCard.avatar.shadow === 'glow' ? `0 0 15px ${editedCard.theme.primaryColor}` : '0 10px 15px -3px rgba(0,0,0,0.1)'
+                        }}
+                        className="w-20 h-20 rounded-full object-cover shadow-lg"
+                        alt="profile"
+                      />
+                      <h4 className={`font-black text-sm mt-2 leading-tight ${isDarkPreview ? 'text-white' : 'text-slate-950'}`}>
+                        {editedCard.profile.firstName} {editedCard.profile.lastName}
+                      </h4>
+                      <p className={`text-[10px] font-bold mt-0.5 ${isDarkPreview ? 'text-slate-300' : 'text-slate-600'}`}>{editedCard.profile.designation}</p>
+                      <p className="text-[10px] font-black mt-0.5" style={{ color: editedCard.theme.primaryColor }}>
+                        {editedCard.profile.company}
+                      </p>
+                      <p className={`text-[10px] mt-2 italic px-3 max-w-xs truncate leading-normal font-medium ${isDarkPreview ? 'text-slate-300' : 'text-slate-600'}`}>
+                        "{editedCard.profile.tagline || 'Tagline placeholder'}"
+                      </p>
+                    </div>
+
+                    {/* Action Contact buttons */}
+                    <div className="grid grid-cols-4 gap-1.5 px-4 shrink-0">
+                      {editedCard.contact.phone && (
+                        <div className={`p-2 rounded-xl flex flex-col items-center gap-1 text-center border ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200'}`}>
+                          <Smartphone size={13} style={{ color: editedCard.theme.primaryColor }} />
+                          <span className={`text-[9px] font-black ${isDarkPreview ? 'text-slate-200' : 'text-slate-800'}`}>Call</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Skills Section */}
-                {editedCard.skills.length > 0 && (
-                  <div className="px-4 py-3 flex flex-col gap-2">
-                    <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest">Technical Skills</span>
-                    <div className="flex flex-col gap-2">
-                      {editedCard.skills.map((s) => (
-                        <div key={s.id}>
-                          <div className="flex justify-between text-[9px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                            <span>{s.name}</span>
-                            <span>{s.percentage}%</span>
-                          </div>
-                          <div className="w-full bg-slate-100 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full" style={{ backgroundColor: editedCard.theme.primaryColor, width: `${s.percentage}%` }}></div>
-                          </div>
+                      )}
+                      {editedCard.contact.whatsapp && (
+                        <div className={`p-2 rounded-xl flex flex-col items-center gap-1 text-center border ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200'}`}>
+                          <MessageSquare size={13} className="text-emerald-500" />
+                          <span className={`text-[9px] font-black ${isDarkPreview ? 'text-slate-200' : 'text-slate-800'}`}>Chat</span>
                         </div>
-                      ))}
+                      )}
+                      {editedCard.contact.email && (
+                        <div className={`p-2 rounded-xl flex flex-col items-center gap-1 text-center border ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200'}`}>
+                          <Link size={13} style={{ color: editedCard.theme.primaryColor }} />
+                          <span className={`text-[9px] font-black ${isDarkPreview ? 'text-slate-200' : 'text-slate-800'}`}>Email</span>
+                        </div>
+                      )}
+                      <div className={`p-2 rounded-xl flex flex-col items-center gap-1 text-center border ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200'}`}>
+                        <Download size={13} style={{ color: editedCard.theme.primaryColor }} />
+                        <span className={`text-[9px] font-black ${isDarkPreview ? 'text-slate-200' : 'text-slate-800'}`}>vCard</span>
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                {/* Public QR Teaser */}
-                <div className="p-4 mt-auto">
-                  <div className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 rounded-2xl p-3 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shrink-0">
-                      <QrCode size={24} className="text-slate-900" />
+                    {/* Biography Preview */}
+                    <div className={`px-4 py-3 flex flex-col gap-1 border-t mt-2 ${isDarkPreview ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                      <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Biography</span>
+                      <p className={`text-[10px] leading-relaxed line-clamp-3 font-semibold ${isDarkPreview ? 'text-slate-200' : 'text-slate-900'}`}>
+                        {editedCard.profile.about}
+                      </p>
                     </div>
-                    <div>
-                      <h6 className="font-bold text-[9px] text-slate-800 dark:text-white leading-tight">Interactive Scan QR</h6>
-                      <p className="text-[8px] text-slate-500 leading-normal mt-0.5">Scans download vCard directly to contact rosters.</p>
-                    </div>
-                  </div>
-                </div>
 
-              </div>
+                    {/* Services list */}
+                    {editedCard.services.length > 0 && (
+                      <div className={`px-4 py-3 flex flex-col gap-2 border-t ${isDarkPreview ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Services</span>
+                        {editedCard.services.map((s) => (
+                          <div key={s.id} className={`p-2.5 rounded-xl border ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
+                            <h5 className={`font-bold text-[10px] leading-snug ${isDarkPreview ? 'text-white' : 'text-slate-900'}`}>{s.title}</h5>
+                            <p className={`text-[9px] mt-0.5 leading-normal ${isDarkPreview ? 'text-slate-300' : 'text-slate-700'}`}>{s.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Products Grid list */}
+                    {editedCard.products.length > 0 && (
+                      <div className={`px-4 py-3 flex flex-col gap-2 border-t ${isDarkPreview ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Store Products</span>
+                        <div className="flex flex-col gap-2">
+                          {editedCard.products.map((p) => (
+                            <div key={p.id} className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
+                              <div className="min-w-0 flex-1">
+                                <h5 className={`font-bold text-[10px] leading-snug truncate ${isDarkPreview ? 'text-white' : 'text-slate-900'}`}>{p.title}</h5>
+                                <p className={`text-[9px] mt-0.5 leading-normal truncate ${isDarkPreview ? 'text-slate-300' : 'text-slate-700'}`}>{p.description}</p>
+                              </div>
+                              <span className={`text-[10px] font-black px-2 py-1 rounded border ${isDarkPreview ? 'text-indigo-300 bg-indigo-950 border-indigo-800' : 'text-indigo-700 bg-indigo-50 border-indigo-200'}`}>
+                                {p.price}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Skills Section */}
+                    {editedCard.skills.length > 0 && (
+                      <div className={`px-4 py-3 flex flex-col gap-2 border-t ${isDarkPreview ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Technical Skills</span>
+                        <div className="flex flex-col gap-2">
+                          {editedCard.skills.map((s) => (
+                            <div key={s.id}>
+                              <div className={`flex justify-between text-[9px] font-bold mb-1 ${isDarkPreview ? 'text-slate-300' : 'text-slate-800'}`}>
+                                <span>{s.name}</span>
+                                <span>{s.percentage}%</span>
+                              </div>
+                              <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDarkPreview ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                                <div className="h-full rounded-full" style={{ backgroundColor: editedCard.theme.primaryColor, width: `${s.percentage}%` }}></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Public QR Teaser */}
+                    <div className="p-4 mt-auto">
+                      <div className={`border rounded-2xl p-3 flex items-center gap-3 ${isDarkPreview ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
+                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-xs">
+                          <QrCode size={24} className="text-slate-900" />
+                        </div>
+                        <div>
+                          <h6 className={`font-bold text-[9px] leading-tight ${isDarkPreview ? 'text-white' : 'text-slate-900'}`}>Interactive Scan QR</h6>
+                          <p className={`text-[8px] leading-normal mt-0.5 ${isDarkPreview ? 'text-slate-400' : 'text-slate-600'}`}>Scans download vCard directly to contact rosters.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Public preview button */}
