@@ -830,14 +830,14 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                     className="w-20 h-20 rounded-full object-cover shadow-lg"
                     alt="profile"
                   />
-                  <h4 className="font-black text-base mt-2 leading-tight text-slate-950 dark:text-white">
+                  <h4 className="font-bold text-sm mt-2 leading-tight">
                     {editedCard.profile.firstName} {editedCard.profile.lastName}
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 font-bold mt-0.5">{editedCard.profile.designation}</p>
-                  <p className="text-xs font-black mt-0.5" style={{ color: editedCard.theme.primaryColor }}>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{editedCard.profile.designation}</p>
+                  <p className="text-[9px] font-bold mt-0.5" style={{ color: editedCard.theme.primaryColor }}>
                     {editedCard.profile.company}
                   </p>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 italic px-3 max-w-xs leading-relaxed font-semibold">
+                  <p className="text-[9px] text-slate-400 mt-2 italic px-3 max-w-xs truncate leading-normal">
                     "{editedCard.profile.tagline || 'Tagline placeholder'}"
                   </p>
                 </div>
@@ -845,37 +845,37 @@ export default function CardBuilder({ card, onSave, onBack }: CardBuilderProps) 
                 {/* Action Contact buttons */}
                 <div className="grid grid-cols-4 gap-1.5 px-4 shrink-0">
                   {editedCard.contact.phone && (
-                    <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl flex flex-col items-center gap-1 text-center border border-slate-200 dark:border-slate-700">
-                      <Smartphone size={15} className="text-slate-700 dark:text-slate-200" style={{ color: editedCard.theme.primaryColor }} />
-                      <span className="text-[10px] font-extrabold text-slate-900 dark:text-slate-100">Call</span>
+                    <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
+                      <Smartphone size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
+                      <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">Call</span>
                     </div>
                   )}
                   {editedCard.contact.whatsapp && (
-                    <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl flex flex-col items-center gap-1 text-center border border-slate-200 dark:border-slate-700">
-                      <MessageSquare size={15} className="text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-[10px] font-extrabold text-slate-900 dark:text-slate-100">Chat</span>
+                    <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
+                      <MessageSquare size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
+                      <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">Chat</span>
                     </div>
                   )}
                   {editedCard.contact.email && (
-                    <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl flex flex-col items-center gap-1 text-center border border-slate-200 dark:border-slate-700">
-                      <Link size={15} className="text-slate-700 dark:text-slate-200" style={{ color: editedCard.theme.primaryColor }} />
-                      <span className="text-[10px] font-extrabold text-slate-900 dark:text-slate-100">Email</span>
+                    <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
+                      <Link size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
+                      <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">Email</span>
                     </div>
                   )}
-                  <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl flex flex-col items-center gap-1 text-center border border-slate-200 dark:border-slate-700">
-                    <Download size={15} className="text-slate-700 dark:text-slate-200" style={{ color: editedCard.theme.primaryColor }} />
-                    <span className="text-[10px] font-extrabold text-slate-900 dark:text-slate-100">vCard</span>
+                  <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-xl flex flex-col items-center gap-1 text-center border dark:border-white/5">
+                    <Download size={13} className="text-slate-500" style={{ color: editedCard.theme.primaryColor }} />
+                    <span className="text-[8px] font-bold text-slate-600 dark:text-slate-300">vCard</span>
                   </div>
                 </div>
 
                 {/* Services list */}
                 {editedCard.services.length > 0 && (
                   <div className="px-4 py-3 flex flex-col gap-2">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Services</span>
+                    <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest">Services</span>
                     {editedCard.services.map((s) => (
-                      <div key={s.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                        <h5 className="font-extrabold text-xs text-slate-950 dark:text-white leading-snug">{s.title}</h5>
-                        <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-1 leading-relaxed font-semibold">{s.description}</p>
+                      <div key={s.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border dark:border-white/5">
+                        <h5 className="font-bold text-[10px] text-slate-800 dark:text-white leading-snug">{s.title}</h5>
+                        <p className="text-[9px] text-slate-500 mt-0.5 leading-normal">{s.description}</p>
                       </div>
                     ))}
                   </div>
