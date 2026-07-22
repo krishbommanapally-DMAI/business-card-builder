@@ -152,7 +152,7 @@ export default function App() {
               id: sbUser.id,
               email: sbUser.email || '',
               fullName: sbUser.user_metadata?.fullName || sbUser.user_metadata?.full_name || 'New User',
-              role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+              role: sbUser.email?.toLowerCase() === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
               subscription: {
                 plan: 'Premium',
                 status: 'active',
@@ -341,7 +341,7 @@ export default function App() {
             id: sbUser.id,
             email: sbUser.email || '',
             fullName: sbUser.user_metadata?.fullName || sbUser.user_metadata?.full_name || 'New User',
-            role: (sbUser.email === 'admin@cardnest.com' || sbUser.user_metadata?.role === 'super_admin' || sbUser.user_metadata?.role === 'admin') ? 'super_admin' : 'premium_user',
+            role: (sbUser.email?.toLowerCase() === 'admin@cardnest.com' || sbUser.user_metadata?.role === 'super_admin' || sbUser.user_metadata?.role === 'admin') ? 'super_admin' : 'premium_user',
             subscription: {
               plan: 'Premium',
               status: 'active',
@@ -434,7 +434,7 @@ export default function App() {
             id: sbUser.id,
             email: sbUser.email || '',
             fullName: fullName,
-            role: sbUser.email === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
+            role: sbUser.email?.toLowerCase() === 'admin@cardnest.com' ? 'super_admin' : 'premium_user',
             isVerified: true, // Auto-approve users when connected to a real Supabase database
             subscription: {
               plan: 'Premium',
@@ -476,7 +476,11 @@ export default function App() {
           if (mappedUser.isVerified) {
             setCurrentUser(mappedUser);
             localStorage.setItem('cardnest_current_user', JSON.stringify(mappedUser));
-            setCurrentView('dashboard');
+            if (mappedUser.role === 'super_admin') {
+              setCurrentView('admin');
+            } else {
+              setCurrentView('dashboard');
+            }
             return { success: true, pendingApproval: false };
           } else {
             return { success: true, pendingApproval: true };
