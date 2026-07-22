@@ -67,7 +67,10 @@ export function mapRowToCard(row: any): DigitalCard {
   if (!row) return {} as DigitalCard;
   
   // Extract modular data with fallbacks
-  const mods = row.modules || {};
+  let mods = row.modules || {};
+  if (typeof mods === 'string') {
+    try { mods = JSON.parse(mods); } catch (e) { mods = {}; }
+  }
   
   // Parse name
   let firstName = '';
@@ -95,6 +98,31 @@ export function mapRowToCard(row: any): DigitalCard {
     ? (row.is_published ? 'published' : 'draft') 
     : (row.status || 'published');
 
+  let themeConfig = row.theme_config || row.theme || mods.theme || {};
+  if (typeof themeConfig === 'string') {
+    try { themeConfig = JSON.parse(themeConfig); } catch (e) { themeConfig = {}; }
+  }
+
+  let contactInfo = row.contact_info || row.contact || mods.contact || {};
+  if (typeof contactInfo === 'string') {
+    try { contactInfo = JSON.parse(contactInfo); } catch (e) { contactInfo = {}; }
+  }
+
+  let socialsData = row.socials || row.social_links || row.socialLinks || mods.socialLinks || [];
+  if (typeof socialsData === 'string') {
+    try { socialsData = JSON.parse(socialsData); } catch (e) { socialsData = []; }
+  }
+
+  let heroData = mods.hero || row.hero_config || row.hero || { enabled: true, type: 'gradient', gradientStart: '#3B82F6', gradientEnd: '#1E3A8A' };
+  if (typeof heroData === 'string') {
+    try { heroData = JSON.parse(heroData); } catch (e) { heroData = {}; }
+  }
+
+  let galleryData = Array.isArray(mods.gallery) ? mods.gallery : (Array.isArray(row.gallery) ? row.gallery : []);
+  if (typeof galleryData === 'string') {
+    try { galleryData = JSON.parse(galleryData); } catch (e) { galleryData = []; }
+  }
+
   return {
     id: row.id,
     userId: row.user_id || row.userId || 'user-001',
@@ -105,8 +133,8 @@ export function mapRowToCard(row: any): DigitalCard {
     updatedAt: row.updated_at || row.updatedAt || new Date().toISOString(),
     
     // Modules with robust fallback parsing (both root columns and modules jsonb field)
-    theme: row.theme_config || row.theme || mods.theme || {},
-    hero: mods.hero || row.hero || {},
+    theme: themeConfig,
+    hero: heroData,
     avatar: {
       url: row.avatar_url || '',
       borderWidth: 2,
@@ -130,13 +158,13 @@ export function mapRowToCard(row: any): DigitalCard {
       ...(row.logo_url ? { url: row.logo_url } : {})
     },
     profile: profile,
-    contact: row.contact_info || row.contact || mods.contact || {},
-    socialLinks: row.socials || row.social_links || row.socialLinks || mods.socialLinks || [],
+    contact: contactInfo,
+    socialLinks: socialsData,
     customButtons: mods.customButtons || row.custom_buttons || row.customButtons || [],
     about: mods.about || row.about || {},
     services: mods.services || row.services || [],
     products: mods.products || row.products || [],
-    gallery: mods.gallery || row.gallery || [],
+    gallery: galleryData,
     videos: mods.videos || row.videos || [],
     testimonials: mods.testimonials || row.testimonials || [],
     certificates: mods.certificates || row.certificates || [],
@@ -272,15 +300,26 @@ export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | nul
   if (!isSupabaseConfigured) return null;
   
   try {
-    const { data, error } = await supabase
+    // 1. Try matching slug first
+    let { data, error } = await supabase
       .from('cards')
       .select('*')
       .ilike('slug', slug)
       .maybeSingle();
       
-    if (error) {
+    // 2. Fallback: try matching by exact ID or converted deterministic UUID
+    if (!data) {
+      const dbCardId = isValidUUID(slug) ? slug : generateDeterministicUUID('card', slug);
+      const { data: idData } = await supabase
+        .from('cards')
+        .select('*')
+        .or(`id.eq.${slug},id.eq.${dbCardId}`)
+        .maybeSingle();
+      if (idData) data = idData;
+    }
+
+    if (error && !data) {
       console.error(`Supabase query error fetching card with slug ${slug}:`, error.message);
-      throw error;
     }
     
     return data ? mapRowToCard(data) : null;
@@ -299,19 +338,33 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
   if (!isSupabaseConfigured) return;
   
   const payload = mapCardToRow(card);
+  const dbCardId = payload.id; // Correct deterministic UUID matching database schema!
   const maxRetries = 25;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      // Check if the card already exists
+      // Check if the card already exists using either the deterministic UUID or original ID
       const { data: existing, error: checkError } = await supabase
         .from('cards')
         .select('id')
-        .eq('id', card.id)
+        .or(`id.eq.${dbCardId},id.eq.${card.id}`)
         .maybeSingle();
         
       if (checkError) {
-        throw checkError;
+        // If query fails due to type error on card.id, retry checking with dbCardId directly
+        const { data: fallbackExisting } = await supabase
+          .from('cards')
+          .select('id')
+          .eq('id', dbCardId)
+          .maybeSingle();
+        if (fallbackExisting) {
+          const { error: updateError } = await supabase
+            .from('cards')
+            .update(payload)
+            .eq('id', dbCardId);
+          if (updateError) throw updateError;
+          break;
+        }
       }
       
       if (existing) {
@@ -319,7 +372,7 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
         const { error: updateError } = await supabase
           .from('cards')
           .update(payload)
-          .eq('id', card.id);
+          .eq('id', existing.id || dbCardId);
           
         if (updateError) {
           const missingColumn = extractColumnNameFromError(updateError.message);
