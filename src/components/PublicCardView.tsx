@@ -231,264 +231,269 @@ END:VCARD`;
       </div>
 
       {/* Primary Card View Sheet */}
-      <main 
-        style={{ borderRadius: card.theme.borderRadius === 'full' ? '32px' : card.theme.borderRadius === 'none' ? '0px' : '24px' }}
-        className={`w-full max-w-md mt-6 bg-white border border-slate-200/50 shadow-2xl relative z-10 overflow-hidden flex flex-col justify-start shrink-0 ${card.theme.darkMode ? 'bg-slate-950 border-white/5 text-white' : 'bg-white text-slate-800'}`}
-      >
-        
-        {/* HERO SECTION CONTAINER */}
-        {card.hero.enabled && card.hero.type !== 'none' && (
-          <div 
-            style={{
-              height: card.hero.height === 'small' ? '120px' : card.hero.height === 'large' ? '220px' : '170px',
-              background: card.hero.type === 'gradient'
-                ? `linear-gradient(135deg, ${card.hero.gradientStart || '#3B82F6'}, ${card.hero.gradientEnd || '#1E3A8A'})`
-                : card.hero.solidColor || card.theme.primaryColor
-            }}
-            className="w-full relative shrink-0 overflow-hidden"
+      {(() => {
+        const isDark = Boolean(card.theme.darkMode);
+        return (
+          <main 
+            style={{ borderRadius: card.theme.borderRadius === 'full' ? '32px' : card.theme.borderRadius === 'none' ? '0px' : '24px' }}
+            className={`w-full max-w-md mt-6 relative z-10 overflow-hidden flex flex-col justify-start shrink-0 shadow-2xl transition-colors ${isDark ? 'bg-slate-950 border border-slate-800 text-white' : 'bg-white border border-slate-200/80 text-slate-900'}`}
           >
-            {card.hero.type === 'image' && card.hero.mediaUrl && (
-              <img src={card.hero.mediaUrl} className="absolute inset-0 w-full h-full object-cover" alt="Hero background" />
+            
+            {/* HERO SECTION CONTAINER */}
+            {card.hero.enabled && card.hero.type !== 'none' && (
+              <div 
+                style={{
+                  height: card.hero.height === 'small' ? '120px' : card.hero.height === 'large' ? '220px' : '170px',
+                  background: card.hero.type === 'gradient'
+                    ? `linear-gradient(135deg, ${card.hero.gradientStart || '#3B82F6'}, ${card.hero.gradientEnd || '#1E3A8A'})`
+                    : card.hero.solidColor || card.theme.primaryColor
+                }}
+                className="w-full relative shrink-0 overflow-hidden"
+              >
+                {card.hero.type === 'image' && card.hero.mediaUrl && (
+                  <img src={card.hero.mediaUrl} className="absolute inset-0 w-full h-full object-cover" alt="Hero background" />
+                )}
+                {/* Dark blur overlay */}
+                <div 
+                  style={{
+                    backgroundColor: card.hero.overlayColor || '#000000',
+                    opacity: card.hero.overlayOpacity || 0.1,
+                    backdropFilter: `blur(${card.hero.overlayBlur || 0}px)`
+                  }}
+                  className="absolute inset-0"
+                ></div>
+              </div>
             )}
-            {/* Dark blur overlay */}
-            <div 
-              style={{
-                backgroundColor: card.hero.overlayColor || '#000000',
-                opacity: card.hero.overlayOpacity || 0.1,
-                backdropFilter: `blur(${card.hero.overlayBlur || 0}px)`
-              }}
-              className="absolute inset-0"
-            ></div>
-          </div>
-        )}
 
-        {/* OVERLAPPING AVATAR BLOCK */}
-        <div className="flex flex-col items-center -mt-12 px-6 pb-4 shrink-0 text-center relative z-10">
-          <img 
-            src={card.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
-            style={{
-              borderWidth: `${card.avatar.borderWidth}px`,
-              borderColor: card.avatar.borderColor,
-              boxShadow: card.avatar.shadow === 'glow' ? `0 0 20px ${card.theme.primaryColor}` : '0 10px 15px -3px rgba(0,0,0,0.1)'
-            }}
-            className="w-24 h-24 rounded-full object-cover shadow-lg"
-            alt="profile logo"
-          />
-          <h2 className="text-2xl font-display font-extrabold mt-3 tracking-tight">
-            {card.profile.prefix && `${card.profile.prefix} `}{card.profile.firstName} {card.profile.lastName}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold mt-0.5">{card.profile.designation}</p>
-          <p className="text-base font-extrabold mt-0.5 tracking-tight" style={{ color: card.theme.primaryColor }}>
-            {card.profile.company}
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 italic px-4 leading-relaxed max-w-sm">
-            "{card.profile.tagline || 'Tagline placeholder'}"
-          </p>
-        </div>
-
-        {/* QUICK DIRECT CONTACT GRID */}
-        <div className="grid grid-cols-4 gap-2 px-6 shrink-0 mb-6">
-          {card.contact.phone && (
-            <a 
-              href={`tel:${card.contact.phone}`}
-              className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
-            >
-              <Phone size={18} className="text-slate-500" style={{ color: card.theme.primaryColor }} />
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Call</span>
-            </a>
-          )}
-          {card.contact.whatsapp && (
-            <a 
-              href={`https://wa.me/${card.contact.whatsapp.replace(/[^0-9]/g, '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
-            >
-              <MessageSquare size={18} className="text-emerald-500" />
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">WhatsApp</span>
-            </a>
-          )}
-          {card.contact.email && (
-            <a 
-              href={`mailto:${card.contact.email}`}
-              className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
-            >
-              <Mail size={18} className="text-slate-500" style={{ color: card.theme.primaryColor }} />
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Email</span>
-            </a>
-          )}
-          <button 
-            onClick={handleDownloadVCard}
-            className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer"
-          >
-            <Download size={18} className="text-slate-500" style={{ color: card.theme.primaryColor }} />
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Save vCard</span>
-          </button>
-        </div>
-
-        {/* CORE DETAILS COLLAPSIBLE DESCRIPTION */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5">
-          <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Biography</span>
-          <p className="text-base text-slate-900 dark:text-slate-100 mt-2 leading-relaxed font-medium">
-            {card.profile.about}
-          </p>
-        </div>
-
-        {/* SERVICES OFFERED */}
-        {card.services.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">My Services</span>
-            <div className="flex flex-col gap-2.5">
-              {card.services.map((s) => (
-                <div key={s.id} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 hover:shadow-sm transition-all">
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <Sparkles size={15} style={{ color: card.theme.primaryColor }} /> {s.title}
-                  </h4>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm mt-1.5 leading-relaxed font-medium">
-                    {s.description}
-                  </p>
-                </div>
-              ))}
+            {/* OVERLAPPING AVATAR BLOCK */}
+            <div className="flex flex-col items-center -mt-12 px-6 pb-4 shrink-0 text-center relative z-10">
+              <img 
+                src={card.avatar.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
+                style={{
+                  borderWidth: `${card.avatar.borderWidth}px`,
+                  borderColor: card.avatar.borderColor,
+                  boxShadow: card.avatar.shadow === 'glow' ? `0 0 20px ${card.theme.primaryColor}` : '0 10px 15px -3px rgba(0,0,0,0.1)'
+                }}
+                className="w-24 h-24 rounded-full object-cover shadow-lg"
+                alt="profile logo"
+              />
+              <h2 className={`text-2xl font-display font-black mt-3 tracking-tight ${isDark ? 'text-white' : 'text-slate-950'}`}>
+                {card.profile.prefix && `${card.profile.prefix} `}{card.profile.firstName} {card.profile.lastName}
+              </h2>
+              <p className={`text-sm font-bold mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{card.profile.designation}</p>
+              <p className="text-base font-black mt-0.5 tracking-tight" style={{ color: card.theme.primaryColor }}>
+                {card.profile.company}
+              </p>
+              <p className={`text-sm italic px-4 leading-relaxed max-w-sm mt-3 font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                "{card.profile.tagline || 'Tagline placeholder'}"
+              </p>
             </div>
-          </div>
-        )}
 
-        {/* E-COMMERCE PRODUCTS CART */}
-        {card.products.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Store Products</span>
-            <div className="grid grid-cols-1 gap-3">
-              {card.products.map((p) => (
-                <div key={p.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 flex flex-col justify-between hover:shadow-sm transition-all gap-3">
-                  <div>
-                    <div className="flex items-center justify-between gap-4">
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">{p.title}</h4>
-                      <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 shrink-0 bg-white dark:bg-white/10 px-2.5 py-1 rounded border dark:border-white/5">{p.price}</span>
-                    </div>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm mt-1.5 leading-normal font-medium">
-                      {p.description}
-                    </p>
-                  </div>
-                  
-                  {p.whatsappOrder && (
-                    <button 
-                      onClick={() => handleWhatsAppOrder(p.title, p.price)}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/10 active:scale-98 transition-all cursor-pointer"
-                    >
-                      <ShoppingBag size={15} /> Buy via WhatsApp
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* PROGRESSIVE SKILLS */}
-        {card.skills.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Technical Deliverables</span>
-            <div className="flex flex-col gap-3">
-              {card.skills.map((s) => (
-                <div key={s.id}>
-                  <div className="flex justify-between text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    <span>{s.name}</span>
-                    <span>{s.percentage}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-white/10 h-2.5 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{ backgroundColor: card.theme.primaryColor, width: `${s.percentage}%` }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* SOCIAL LINK CAROUSEL GRID */}
-        {card.socialLinks.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Find Me Elsewhere</span>
-            <div className="grid grid-cols-2 gap-2.5">
-              {card.socialLinks.map((link) => (
+            {/* QUICK DIRECT CONTACT GRID */}
+            <div className="grid grid-cols-4 gap-2 px-6 shrink-0 mb-6">
+              {card.contact.phone && (
                 <a 
-                  key={link.id} 
-                  href={link.url}
+                  href={`tel:${card.contact.phone}`}
+                  className={`py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border shadow-sm ${isDark ? 'bg-slate-900 border-slate-800 hover:bg-slate-850' : 'bg-slate-100/80 border-slate-200/80 hover:bg-slate-200/60'}`}
+                >
+                  <Phone size={18} style={{ color: card.theme.primaryColor }} />
+                  <span className={`text-xs font-black ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Call</span>
+                </a>
+              )}
+              {card.contact.whatsapp && (
+                <a 
+                  href={`https://wa.me/${card.contact.whatsapp.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 dark:bg-white/5 border dark:border-white/5 rounded-2xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all font-bold text-sm"
+                  className={`py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border shadow-sm ${isDark ? 'bg-slate-900 border-slate-800 hover:bg-slate-850' : 'bg-slate-100/80 border-slate-200/80 hover:bg-slate-200/60'}`}
                 >
-                  <Smartphone size={16} className="text-indigo-500" />
-                  <span className="capitalize text-slate-700 dark:text-slate-300">{link.platform}</span>
+                  <MessageSquare size={18} className="text-emerald-500" />
+                  <span className={`text-xs font-black ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>WhatsApp</span>
                 </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* APPOINTMENT SCHEDULER WIDGET */}
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Appointment Slots</span>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Select a time slot below to secure your 15-minute consultation.</p>
-          
-          <div className="grid grid-cols-2 gap-2.5">
-            {mockTimeSlots.map((slot) => (
-              <button
-                key={slot.id}
-                type="button"
-                disabled={!slot.available}
-                onClick={() => {
-                  setSelectedSlot(slot.time);
-                  setAppointmentModalOpen(true);
-                }}
-                className={`p-3 text-sm font-bold border rounded-2xl transition-all cursor-pointer ${!slot.available ? 'bg-slate-100 dark:bg-white/5 border-slate-200/50 text-slate-400 line-through cursor-not-allowed' : selectedSlot === slot.time ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950' : 'bg-slate-50 dark:bg-white/5 border-transparent text-slate-700 dark:text-slate-300 hover:border-slate-300'}`}
-              >
-                {slot.time}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* OFFICE DIRECT LOCATION MAP BOX */}
-        {card.contact.address && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-3">
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Office Location</span>
-            <div className="bg-slate-50 dark:bg-white/5 border dark:border-white/5 rounded-2xl p-4 flex gap-3.5 items-start">
-              <MapPin size={20} className="text-red-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-slate-700 dark:text-slate-300 leading-normal font-semibold">
-                  {card.contact.address}
-                </p>
+              )}
+              {card.contact.email && (
                 <a 
-                  href="https://maps.google.com" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5 mt-2"
+                  href={`mailto:${card.contact.email}`}
+                  className={`py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border shadow-sm ${isDark ? 'bg-slate-900 border-slate-800 hover:bg-slate-850' : 'bg-slate-100/80 border-slate-200/80 hover:bg-slate-200/60'}`}
                 >
-                  Get GPS Driving Directions <ChevronRight size={14} />
+                  <Mail size={18} style={{ color: card.theme.primaryColor }} />
+                  <span className={`text-xs font-black ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Email</span>
                 </a>
+              )}
+              <button 
+                onClick={handleDownloadVCard}
+                className={`py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border shadow-sm ${isDark ? 'bg-slate-900 border-slate-800 hover:bg-slate-850' : 'bg-slate-100/80 border-slate-200/80 hover:bg-slate-200/60'}`}
+              >
+                <Download size={18} style={{ color: card.theme.primaryColor }} />
+                <span className={`text-xs font-black ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Save vCard</span>
+              </button>
+            </div>
+
+            {/* CORE DETAILS COLLAPSIBLE DESCRIPTION */}
+            <div className={`px-6 py-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+              <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Biography</span>
+              <p className={`text-base font-semibold mt-2 leading-relaxed ${isDark ? 'text-slate-100' : 'text-slate-950'}`}>
+                {card.profile.about}
+              </p>
+            </div>
+
+            {/* SERVICES OFFERED */}
+            {card.services.length > 0 && (
+              <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>My Services</span>
+                <div className="flex flex-col gap-2.5">
+                  {card.services.map((s) => (
+                    <div key={s.id} className={`p-3.5 rounded-2xl border transition-all ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80 shadow-xs'}`}>
+                      <h4 className={`font-black text-sm flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-950'}`}>
+                        <Sparkles size={15} style={{ color: card.theme.primaryColor }} /> {s.title}
+                      </h4>
+                      <p className={`text-sm mt-1.5 leading-relaxed font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                        {s.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* E-COMMERCE PRODUCTS CART */}
+            {card.products.length > 0 && (
+              <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Store Products</span>
+                <div className="grid grid-cols-1 gap-3">
+                  {card.products.map((p) => (
+                    <div key={p.id} className={`p-4 rounded-2xl border flex flex-col justify-between transition-all gap-3 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80 shadow-xs'}`}>
+                      <div>
+                        <div className="flex items-center justify-between gap-4">
+                          <h4 className={`font-black text-sm ${isDark ? 'text-white' : 'text-slate-950'}`}>{p.title}</h4>
+                          <span className={`text-sm font-black shrink-0 px-2.5 py-1 rounded-xl border ${isDark ? 'text-indigo-300 bg-indigo-950/80 border-indigo-800' : 'text-indigo-700 bg-indigo-50 border-indigo-200'}`}>{p.price}</span>
+                        </div>
+                        <p className={`text-sm mt-1.5 leading-normal font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          {p.description}
+                        </p>
+                      </div>
+                      
+                      {p.whatsappOrder && (
+                        <button 
+                          onClick={() => handleWhatsAppOrder(p.title, p.price)}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/10 active:scale-98 transition-all cursor-pointer"
+                        >
+                          <ShoppingBag size={15} /> Buy via WhatsApp
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PROGRESSIVE SKILLS */}
+            {card.skills.length > 0 && (
+              <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Technical Deliverables</span>
+                <div className="flex flex-col gap-3">
+                  {card.skills.map((s) => (
+                    <div key={s.id}>
+                      <div className={`flex justify-between text-sm font-black mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                        <span>{s.name}</span>
+                        <span>{s.percentage}%</span>
+                      </div>
+                      <div className={`w-full h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                        <div className="h-full rounded-full" style={{ backgroundColor: card.theme.primaryColor, width: `${s.percentage}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SOCIAL LINK CAROUSEL GRID */}
+            {card.socialLinks.length > 0 && (
+              <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Find Me Elsewhere</span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {card.socialLinks.map((link) => (
+                    <a 
+                      key={link.id} 
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`p-3 border rounded-2xl flex items-center gap-2.5 transition-all font-black text-sm ${isDark ? 'bg-slate-900 border-slate-800 hover:bg-slate-850 text-slate-100' : 'bg-slate-100/80 border-slate-200/80 hover:bg-slate-200/60 text-slate-900'}`}
+                    >
+                      <Smartphone size={16} className="text-indigo-500" />
+                      <span className={`capitalize ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{link.platform}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* APPOINTMENT SCHEDULER WIDGET */}
+            <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+              <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Appointment Slots</span>
+              <p className={`text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Select a time slot below to secure your 15-minute consultation.</p>
+              
+              <div className="grid grid-cols-2 gap-2.5">
+                {mockTimeSlots.map((slot) => (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    disabled={!slot.available}
+                    onClick={() => {
+                      setSelectedSlot(slot.time);
+                      setAppointmentModalOpen(true);
+                    }}
+                    className={`p-3 text-sm font-black border rounded-2xl transition-all cursor-pointer ${!slot.available ? (isDark ? 'bg-slate-900 border-slate-800 text-slate-600 line-through' : 'bg-slate-100 border-slate-200 text-slate-400 line-through cursor-not-allowed') : selectedSlot === slot.time ? (isDark ? 'border-indigo-500 bg-indigo-950/80 text-indigo-200' : 'border-indigo-600 bg-indigo-50 text-indigo-950') : (isDark ? 'bg-slate-900 border-slate-800 text-slate-200 hover:border-slate-700' : 'bg-slate-100/80 border-slate-200 text-slate-900 hover:border-indigo-400')}`}
+                  >
+                    {slot.time}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* CARD FOOTER & QR CODE POPUP */}
-        <div className="bg-slate-50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 p-6 text-center">
-          <div className="inline-flex p-3.5 bg-white border border-slate-200 rounded-3xl mb-4 shadow-sm">
-            <QrCode size={130} className="text-slate-900" />
-          </div>
-          <h4 className="font-display font-extrabold text-base text-slate-900 dark:text-white leading-tight">
-            {card.qrCode.frameText || 'SCAN TO DOWNLOAD CONTACT'}
-          </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed max-w-xs mx-auto">
-            Scan with any smartphone camera to instantly save my contact details to your native address book.
-          </p>
+            {/* OFFICE DIRECT LOCATION MAP BOX */}
+            {card.contact.address && (
+              <div className={`px-6 py-4 border-t flex flex-col gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
+                <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Office Location</span>
+                <div className={`rounded-2xl p-4 flex gap-3.5 items-start border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
+                  <MapPin size={20} className="text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className={`text-sm leading-normal font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+                      {card.contact.address}
+                    </p>
+                    <a 
+                      href="https://maps.google.com" 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className={`text-xs font-bold hover:underline inline-flex items-center gap-0.5 mt-2 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}
+                    >
+                      Get GPS Driving Directions <ChevronRight size={14} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <span className="text-[10px] text-slate-400 font-bold block mt-8 uppercase tracking-widest">
-            Powered by Digital Moksha
-          </span>
-        </div>
+            {/* CARD FOOTER & QR CODE POPUP */}
+            <div className={`p-6 text-center border-t ${isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-slate-50 border-slate-200/80'}`}>
+              <div className="inline-flex p-3.5 bg-white border border-slate-200 rounded-3xl mb-4 shadow-sm">
+                <QrCode size={130} className="text-slate-900" />
+              </div>
+              <h4 className={`font-display font-extrabold text-base leading-tight ${isDark ? 'text-white' : 'text-slate-950'}`}>
+                {card.qrCode.frameText || 'SCAN TO DOWNLOAD CONTACT'}
+              </h4>
+              <p className={`text-xs mt-1 leading-relaxed max-w-xs mx-auto font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                Scan with any smartphone camera to instantly save my contact details to your native address book.
+              </p>
 
-      </main>
+              <span className={`text-[10px] font-bold block mt-8 uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                Powered by Digital Moksha
+              </span>
+            </div>
+
+          </main>
+        );
+      })()}
 
       {/* Booking Slot Request Modal */}
       {appointmentModalOpen && (
