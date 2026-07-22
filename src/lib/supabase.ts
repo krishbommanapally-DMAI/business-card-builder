@@ -60,6 +60,28 @@ export function generateDeterministicUUID(namespace: string, input: string): str
 }
 
 /**
+ * Helper utility to safely parse and extract JSON object/array candidates or JSON strings.
+ */
+function parseJSONField<T>(fallback: T, ...candidates: any[]): T {
+  for (const cand of candidates) {
+    if (cand === undefined || cand === null) continue;
+    if (typeof cand === 'string') {
+      const trimmed = cand.trim();
+      if (!trimmed) continue;
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed !== undefined && parsed !== null) return parsed as T;
+      } catch (e) {
+        // Not a valid JSON string, continue
+      }
+    } else if (typeof cand === 'object' || Array.isArray(cand)) {
+      return cand as T;
+    }
+  }
+  return fallback;
+}
+
+/**
  * Maps a database row from Supabase to our DigitalCard TypeScript type.
  * Supports both standard modular columns (snake_case/camelCase) and fallback fields.
  */
@@ -67,12 +89,9 @@ export function mapRowToCard(row: any): DigitalCard {
   if (!row) return {} as DigitalCard;
   
   // Extract modular data with fallbacks
-  let mods = row.modules || {};
-  if (typeof mods === 'string') {
-    try { mods = JSON.parse(mods); } catch (e) { mods = {}; }
-  }
+  let mods: Record<string, any> = parseJSONField<Record<string, any>>({}, row.modules);
   
-  // Parse name
+  // Parse name & profile
   let firstName = '';
   let lastName = '';
   if (mods.profile?.firstName !== undefined) {
@@ -88,40 +107,21 @@ export function mapRowToCard(row: any): DigitalCard {
     prefix: mods.profile?.prefix || '',
     firstName: firstName,
     lastName: lastName,
-    designation: row.job_title || mods.profile?.designation || '',
-    company: row.company || mods.profile?.company || '',
-    tagline: row.bio || mods.profile?.tagline || '',
-    about: mods.profile?.about || row.bio || '',
+    designation: mods.profile?.designation !== undefined ? mods.profile.designation : (row.job_title || ''),
+    company: mods.profile?.company !== undefined ? mods.profile.company : (row.company || ''),
+    tagline: mods.profile?.tagline !== undefined ? mods.profile.tagline : (row.bio || ''),
+    about: mods.profile?.about !== undefined ? mods.profile.about : (row.bio || ''),
   };
 
   const status = row.is_published !== undefined 
     ? (row.is_published ? 'published' : 'draft') 
     : (row.status || 'published');
 
-  let themeConfig = row.theme_config || row.theme || mods.theme || {};
-  if (typeof themeConfig === 'string') {
-    try { themeConfig = JSON.parse(themeConfig); } catch (e) { themeConfig = {}; }
-  }
+  let themeConfig = parseJSONField({}, mods.theme, row.theme_config, row.theme);
+  let contactInfo = parseJSONField({}, mods.contact, row.contact_info, row.contact);
+  let socialsData = parseJSONField([], mods.socialLinks, row.socials, row.social_links, row.socialLinks);
 
-  let contactInfo = row.contact_info || row.contact || mods.contact || {};
-  if (typeof contactInfo === 'string') {
-    try { contactInfo = JSON.parse(contactInfo); } catch (e) { contactInfo = {}; }
-  }
-
-  let socialsData = row.socials || row.social_links || row.socialLinks || mods.socialLinks || [];
-  if (typeof socialsData === 'string') {
-    try { socialsData = JSON.parse(socialsData); } catch (e) { socialsData = []; }
-  }
-
-  let heroRaw: any = (mods && mods.hero && Object.keys(mods.hero).length > 0) 
-    ? mods.hero 
-    : (row.hero_config || row.hero);
-  if (typeof heroRaw === 'string') {
-    try { heroRaw = JSON.parse(heroRaw); } catch (e) { heroRaw = {}; }
-  }
-  if (!heroRaw || typeof heroRaw !== 'object') {
-    heroRaw = {};
-  }
+  let heroRaw: any = parseJSONField({}, mods.hero, row.hero_config, row.hero);
 
   const heroData = {
     enabled: true,
@@ -134,12 +134,7 @@ export function mapRowToCard(row: any): DigitalCard {
     ...heroRaw
   };
 
-  let galleryRaw: any = (mods && mods.gallery !== undefined) 
-    ? mods.gallery 
-    : (row.gallery !== undefined ? row.gallery : []);
-  if (typeof galleryRaw === 'string') {
-    try { galleryRaw = JSON.parse(galleryRaw); } catch (e) { galleryRaw = []; }
-  }
+  let galleryRaw: any = parseJSONField([], mods.gallery, row.gallery);
   const galleryData = Array.isArray(galleryRaw) ? galleryRaw : [];
 
   return {
@@ -179,22 +174,22 @@ export function mapRowToCard(row: any): DigitalCard {
     profile: profile,
     contact: contactInfo,
     socialLinks: socialsData,
-    customButtons: mods.customButtons || row.custom_buttons || row.customButtons || [],
-    about: mods.about || row.about || {},
-    services: mods.services || row.services || [],
-    products: mods.products || row.products || [],
+    customButtons: parseJSONField([], mods.customButtons, row.custom_buttons, row.customButtons),
+    about: parseJSONField({}, mods.about, row.about),
+    services: parseJSONField([], mods.services, row.services),
+    products: parseJSONField([], mods.products, row.products),
     gallery: galleryData,
-    videos: mods.videos || row.videos || [],
-    testimonials: mods.testimonials || row.testimonials || [],
-    certificates: mods.certificates || row.certificates || [],
-    skills: mods.skills || row.skills || [],
-    education: mods.education || row.education || [],
-    experience: mods.experience || row.experience || [],
-    downloads: mods.downloads || row.downloads || [],
-    businessHours: mods.businessHours || row.business_hours || row.businessHours || {},
-    qrCode: row.qr_code_config || row.qr_code || row.qrCode || mods.qrCode || {},
-    seo: mods.seo || row.seo || {},
-    analytics: mods.analytics || row.analytics || {},
+    videos: parseJSONField([], mods.videos, row.videos),
+    testimonials: parseJSONField([], mods.testimonials, row.testimonials),
+    certificates: parseJSONField([], mods.certificates, row.certificates),
+    skills: parseJSONField([], mods.skills, row.skills),
+    education: parseJSONField([], mods.education, row.education),
+    experience: parseJSONField([], mods.experience, row.experience),
+    downloads: parseJSONField([], mods.downloads, row.downloads),
+    businessHours: parseJSONField({}, mods.businessHours, row.business_hours, row.businessHours),
+    qrCode: parseJSONField({}, row.qr_code_config, row.qr_code, row.qrCode, mods.qrCode),
+    seo: parseJSONField({}, mods.seo, row.seo),
+    analytics: parseJSONField({}, mods.analytics, row.analytics),
   } as DigitalCard;
 }
 
@@ -408,13 +403,27 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
 
       // Auto-heal missing column errors
       const missingColumn = extractColumnNameFromError(errMsg);
-      if (missingColumn) {
-        const camelCol = toCamelCase(missingColumn);
-        const snakeCol = toSnakeCase(missingColumn);
-        console.warn(`[Auto-healing] Stripping non-existent column "${missingColumn}" / "${camelCol}" / "${snakeCol}" from payload and retrying...`);
-        delete payload[missingColumn];
-        delete payload[camelCol];
-        delete payload[snakeCol];
+      if (missingColumn || attempt > 1) {
+        if (missingColumn) {
+          const camelCol = toCamelCase(missingColumn);
+          const snakeCol = toSnakeCase(missingColumn);
+          console.warn(`[Auto-healing] Stripping non-existent column "${missingColumn}" / "${camelCol}" / "${snakeCol}" from payload and retrying...`);
+          delete payload[missingColumn];
+          delete payload[camelCol];
+          delete payload[snakeCol];
+        }
+        
+        // Strip all custom candidate columns at once if retrying to prevent 30+ sequential roundtrips
+        const candidateCols = [
+          'hero_config', 'hero', 'gallery', 'about', 'services', 'products',
+          'videos', 'testimonials', 'certificates', 'skills', 'education',
+          'experience', 'downloads', 'custom_buttons', 'business_hours', 'seo', 'analytics'
+        ];
+        candidateCols.forEach(col => {
+          delete payload[col];
+          delete payload[toCamelCase(col)];
+        });
+        
         continue;
       }
 
@@ -478,13 +487,26 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
     } catch (err: any) {
       const errMsg = err.message || '';
       
-      // Auto-heal on unrecognized column errors during search/select
+      // Auto-heal on unrecognized column errors during search/select or thrown errors
       const missingColumn = extractColumnNameFromError(errMsg);
-      if (missingColumn) {
-        console.warn(`[Auto-healing] Stripping non-existent column "${missingColumn}" from payload and retrying...`);
-        delete payload[missingColumn];
-        delete payload[toCamelCase(missingColumn)];
-        delete payload[toSnakeCase(missingColumn)];
+      if (missingColumn || attempt > 1) {
+        if (missingColumn) {
+          console.warn(`[Auto-healing] Stripping non-existent column "${missingColumn}" from payload and retrying...`);
+          delete payload[missingColumn];
+          delete payload[toCamelCase(missingColumn)];
+          delete payload[toSnakeCase(missingColumn)];
+        }
+        
+        const candidateCols = [
+          'hero_config', 'hero', 'gallery', 'about', 'services', 'products',
+          'videos', 'testimonials', 'certificates', 'skills', 'education',
+          'experience', 'downloads', 'custom_buttons', 'business_hours', 'seo', 'analytics'
+        ];
+        candidateCols.forEach(col => {
+          delete payload[col];
+          delete payload[toCamelCase(col)];
+        });
+        
         continue;
       }
       
