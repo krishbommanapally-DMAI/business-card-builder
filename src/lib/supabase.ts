@@ -226,7 +226,26 @@ export function mapCardToRow(card: DigitalCard): any {
     created_at: card.createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString(),
     
-    // Store remaining modular fields in the 'modules' column to prevent DB structure errors
+    // Top-level field candidates for database schemas with custom columns (auto-healed if DB lacks the column)
+    hero_config: card.hero || {},
+    hero: card.hero || {},
+    gallery: card.gallery || [],
+    about: card.about || {},
+    services: card.services || [],
+    products: card.products || [],
+    videos: card.videos || [],
+    testimonials: card.testimonials || [],
+    certificates: card.certificates || [],
+    skills: card.skills || [],
+    education: card.education || [],
+    experience: card.experience || [],
+    downloads: card.downloads || [],
+    custom_buttons: card.customButtons || [],
+    business_hours: card.businessHours || {},
+    seo: card.seo || {},
+    analytics: card.analytics || {},
+
+    // Always store all modular fields inside 'modules' JSONB as well
     modules: {
       hero: card.hero || {},
       avatar: card.avatar || {},
@@ -247,6 +266,9 @@ export function mapCardToRow(card: DigitalCard): any {
       businessHours: card.businessHours || {},
       seo: card.seo || {},
       analytics: card.analytics || {},
+      socialLinks: card.socialLinks || [],
+      contact: card.contact || {},
+      theme: card.theme || {},
     }
   };
 }
@@ -261,6 +283,13 @@ function toCamelCase(str: string): string {
       .replace('-', '')
       .replace('_', '')
   );
+}
+
+/**
+ * Converts a camelCase key to snake_case.
+ */
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 }
 
 /**
@@ -362,7 +391,7 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
   
   const payload = mapCardToRow(card);
   const dbCardId = payload.id; // Guaranteed valid UUID
-  const maxRetries = 25;
+  const maxRetries = 35;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -379,10 +408,13 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
 
       // Auto-heal missing column errors
       const missingColumn = extractColumnNameFromError(errMsg);
-      if (missingColumn && (payload[missingColumn] !== undefined || payload[toCamelCase(missingColumn)] !== undefined)) {
-        console.warn(`[Auto-healing] Removing column "${missingColumn}" from payload and retrying...`);
+      if (missingColumn) {
+        const camelCol = toCamelCase(missingColumn);
+        const snakeCol = toSnakeCase(missingColumn);
+        console.warn(`[Auto-healing] Stripping non-existent column "${missingColumn}" / "${camelCol}" / "${snakeCol}" from payload and retrying...`);
         delete payload[missingColumn];
-        delete payload[toCamelCase(missingColumn)];
+        delete payload[camelCol];
+        delete payload[snakeCol];
         continue;
       }
 
@@ -409,9 +441,10 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
         if (!updateError) return;
 
         const col = extractColumnNameFromError(updateError.message);
-        if (col && (payload[col] !== undefined || payload[toCamelCase(col)] !== undefined)) {
+        if (col) {
           delete payload[col];
           delete payload[toCamelCase(col)];
+          delete payload[toSnakeCase(col)];
           continue;
         }
         throw updateError;
@@ -423,9 +456,10 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
         if (!insertError) return;
 
         const col = extractColumnNameFromError(insertError.message);
-        if (col && (payload[col] !== undefined || payload[toCamelCase(col)] !== undefined)) {
+        if (col) {
           delete payload[col];
           delete payload[toCamelCase(col)];
+          delete payload[toSnakeCase(col)];
           continue;
         }
 
@@ -446,10 +480,11 @@ export async function dbSaveCard(card: DigitalCard): Promise<void> {
       
       // Auto-heal on unrecognized column errors during search/select
       const missingColumn = extractColumnNameFromError(errMsg);
-      if (missingColumn && (payload[missingColumn] !== undefined || payload[toCamelCase(missingColumn)] !== undefined)) {
-        console.warn(`[Auto-healing] Removing column "${missingColumn}" from payload and retrying...`);
+      if (missingColumn) {
+        console.warn(`[Auto-healing] Stripping non-existent column "${missingColumn}" from payload and retrying...`);
         delete payload[missingColumn];
         delete payload[toCamelCase(missingColumn)];
+        delete payload[toSnakeCase(missingColumn)];
         continue;
       }
       
