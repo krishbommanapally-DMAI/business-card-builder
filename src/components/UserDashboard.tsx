@@ -8,11 +8,12 @@ import { motion } from 'motion/react';
 import { 
   BarChart3, CreditCard, Layout, Settings, LogOut, Plus, Edit2, Eye, 
   Trash2, Copy, Check, Users, QrCode, HardDrive, ShieldCheck, 
-  ChevronRight, Sparkles, Bell, Globe2, Laptop, Monitor, Database
+  ChevronRight, Sparkles, Bell, Globe2, Laptop, Monitor, Database, X
 } from 'lucide-react';
 import { User, DigitalCard } from '../types';
 import { mockCards, createInitialCard } from '../data/mockData';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { QRCodeView } from './QRCodeView';
 
 interface UserDashboardProps {
   user: User;
@@ -35,6 +36,7 @@ export default function UserDashboard({
 }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'analytics' | 'subscription' | 'settings'>('overview');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [selectedQrCard, setSelectedQrCard] = useState<DigitalCard | null>(null);
   const [editName, setEditName] = useState(user.fullName);
   const [editEmail, setEditEmail] = useState(user.email);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -299,6 +301,13 @@ export default function UserDashboard({
 
                       <div className="flex items-center gap-2">
                         <button 
+                          onClick={() => setSelectedQrCard(card)}
+                          className="p-2 bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-950 rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
+                          title="Get Scannable QR Code"
+                        >
+                          <QrCode size={16} />
+                        </button>
+                        <button 
                           onClick={() => onViewCard(card.slug)}
                           className="p-2 bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-950 rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
                           title="View Live Card"
@@ -423,6 +432,13 @@ export default function UserDashboard({
                       className="flex-1 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
                     >
                       <Edit2 size={14} /> Edit Builder
+                    </button>
+                    <button 
+                      onClick={() => setSelectedQrCard(card)}
+                      className="p-2.5 bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-950 rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
+                      title="Get QR Code"
+                    >
+                      <QrCode size={14} />
                     </button>
                     <button 
                       onClick={() => onViewCard(card.slug)}
@@ -791,6 +807,76 @@ export default function UserDashboard({
         )}
 
       </main>
+
+      {/* QR Code Popup Dialog Modal */}
+      {selectedQrCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-sm w-full relative border border-slate-200 text-center"
+          >
+            <button 
+              onClick={() => setSelectedQrCard(null)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <img 
+                src={selectedQrCard.avatar?.url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"} 
+                className="w-10 h-10 rounded-full object-cover border border-slate-200" 
+                alt="Avatar"
+              />
+              <div className="text-left min-w-0">
+                <h3 className="font-display font-extrabold text-sm text-slate-900 truncate">
+                  {selectedQrCard.profile?.firstName} {selectedQrCard.profile?.lastName}
+                </h3>
+                <span className="text-[10px] text-slate-500 font-mono block truncate">
+                  {window.location.host}/{selectedQrCard.slug}
+                </span>
+              </div>
+            </div>
+
+            <div className="my-5 flex flex-col items-center justify-center">
+              <QRCodeView 
+                value={window.location.origin + '/' + selectedQrCard.slug}
+                size={180}
+                foregroundColor={selectedQrCard.qrCode?.foregroundColor || '#0f172a'}
+                backgroundColor={selectedQrCard.qrCode?.backgroundColor || '#ffffff'}
+                logoUrl={selectedQrCard.qrCode?.includeLogo ? (selectedQrCard.companyLogo?.url || selectedQrCard.avatar?.url) : undefined}
+                showDownload={true}
+                downloadFileName={`${selectedQrCard.slug}_qr.png`}
+              />
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto mb-5">
+              Scan with any smartphone camera to instantly view and save this digital business card!
+            </p>
+
+            <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+              <button 
+                onClick={() => {
+                  onViewCard(selectedQrCard.slug);
+                  setSelectedQrCard(null);
+                }}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Open Card View
+              </button>
+              <button 
+                onClick={() => {
+                  handleCopyLink(selectedQrCard.slug);
+                }}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                {copiedSlug === selectedQrCard.slug ? 'Copied Link!' : 'Copy Link'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
