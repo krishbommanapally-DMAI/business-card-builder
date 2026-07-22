@@ -249,6 +249,9 @@ export interface QRCodeSettings {
   gradientColor?: string;
   frameStyle: 'none' | 'sleek' | 'rounded' | 'accent';
   frameText?: string;
+  foregroundColor?: string;
+  backgroundColor?: string;
+  includeLogo?: boolean;
 }
 
 export interface SEOSettings {
