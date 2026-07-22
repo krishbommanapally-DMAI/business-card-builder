@@ -834,37 +834,6 @@ export default function LandingPage({ onRealLogin, onRealRegister, onSelectCard,
                   )}
                 </div>
 
-                {/* Admin / Demo Credentials Helper */}
-                <div className="mb-4 p-3.5 bg-indigo-50/80 border border-indigo-100 rounded-2xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-indigo-950 uppercase tracking-wider">Default Admin Credentials</span>
-                    <span className="text-[10px] text-indigo-600 bg-indigo-100/70 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Quick Auto-fill</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthEmail('admin@cardnest.com');
-                      setAuthPassword('Krish2611');
-                      setAuthError(null);
-                    }}
-                    className="w-full p-2 bg-white hover:bg-indigo-50/50 border border-indigo-200 rounded-xl text-left transition-all cursor-pointer shadow-sm hover:shadow-md hover:border-indigo-400"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-extrabold text-indigo-950 text-xs">Chief Administrator</div>
-                      <div className="text-[10px] text-indigo-600 font-bold font-mono">Select</div>
-                    </div>
-                    <div className="mt-1 flex items-center justify-between text-slate-500 text-[11px] font-mono">
-                      <span>admin@cardnest.com</span>
-                      <span className="text-slate-400">Password: Krish2611</span>
-                    </div>
-                  </button>
-                  <p className="text-[10px] text-slate-400 mt-2 text-center">
-                    {isSupabaseConnected 
-                      ? "Note: If using Live Supabase for the first time, sign up as admin@cardnest.com with password Krish2611 to create the admin account."
-                      : "Clicking the box above will instantly load and pre-fill the Admin credentials."}
-                  </p>
-                </div>
-
                 {/* Error Message Display */}
                 {authError && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-150 text-red-700 text-xs font-semibold rounded-xl text-center">
