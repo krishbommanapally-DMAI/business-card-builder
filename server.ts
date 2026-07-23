@@ -317,10 +317,45 @@ async function startServer() {
   });
 }
 
+function extractCardAvatarUrl(card: any): string | null {
+  if (!card) return null;
+
+  // 1. Check card.avatar
+  if (typeof card.avatar === 'string' && card.avatar.trim().startsWith('http')) {
+    return card.avatar.trim();
+  }
+  if (card.avatar && typeof card.avatar === 'object' && typeof card.avatar.url === 'string' && card.avatar.url.trim().startsWith('http')) {
+    return card.avatar.url.trim();
+  }
+
+  // 2. Check card.companyLogo
+  if (typeof card.companyLogo === 'string' && card.companyLogo.trim().startsWith('http')) {
+    return card.companyLogo.trim();
+  }
+  if (card.companyLogo && typeof card.companyLogo === 'object' && typeof card.companyLogo.url === 'string' && card.companyLogo.url.trim().startsWith('http')) {
+    return card.companyLogo.url.trim();
+  }
+
+  // 3. Check card.profile.avatarUrl
+  if (card.profile && typeof card.profile.avatarUrl === 'string' && card.profile.avatarUrl.trim().startsWith('http')) {
+    return card.profile.avatarUrl.trim();
+  }
+
+  // 4. Check gallery image
+  if (Array.isArray(card.gallery) && card.gallery.length > 0 && card.gallery[0]?.url) {
+    if (typeof card.gallery[0].url === 'string' && card.gallery[0].url.trim().startsWith('http')) {
+      return card.gallery[0].url.trim();
+    }
+  }
+
+  return null;
+}
+
 function injectMetaTags(html: string, card: any | null, fullUrl: string, protocol: string, host: string): string {
   const defaultTitle = 'Digital Business Cards - CardNest';
   const defaultDesc = 'Create and share interactive digital business cards with instant profile previews, QR codes, and contact saving.';
-  const defaultImg = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80';
+  // Abstract digital card background image (neutral, non-person image)
+  const defaultImg = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
 
   let titleStr = defaultTitle;
   let descStr = defaultDesc;
@@ -340,9 +375,9 @@ function injectMetaTags(html: string, card: any | null, fullUrl: string, protoco
 
     descStr = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details & view portfolio.`;
 
-    const rawImg = card.avatar?.url || card.companyLogo?.url;
-    if (rawImg) {
-      imageUrl = rawImg;
+    const cardAvatar = extractCardAvatarUrl(card);
+    if (cardAvatar) {
+      imageUrl = cardAvatar;
     }
   }
 
