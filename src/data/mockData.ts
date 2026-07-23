@@ -133,6 +133,144 @@ const generateMockAnalytics = (viewsMult: number): AnalyticsCard => ({
 
 // Standard premium Templates and Cards database
 export const mockCards: DigitalCard[] = [
+  // Murali Mohan Card
+  {
+    id: 'card-murali',
+    userId: 'user-murali',
+    slug: 'murali',
+    templateId: 'corporate',
+    status: 'published',
+    createdAt: '2026-01-15T10:00:00Z',
+    updatedAt: new Date().toISOString(),
+    theme: {
+      id: 'theme-murali',
+      name: 'Healthcare Blue',
+      primaryColor: '#2563EB',
+      secondaryColor: '#0F172A',
+      accentColor: '#38BDF8',
+      backgroundColor: '#FFFFFF',
+      textColor: '#0F172A',
+      fontFamily: 'Outfit',
+      borderRadius: 'lg',
+      cardStyle: 'elevated',
+      buttonStyle: 'filled',
+      iconStyle: 'circle',
+      glassEffect: true,
+      animations: 'smooth',
+      darkMode: false
+    },
+    hero: {
+      enabled: true,
+      type: 'gradient',
+      mediaUrl: '',
+      posterUrl: '',
+      gradientStart: '#2563EB',
+      gradientEnd: '#1E40AF',
+      solidColor: '',
+      loop: false,
+      muted: true,
+      autoplay: false,
+      overlayColor: '#0F172A',
+      overlayOpacity: 0.1,
+      overlayBlur: 0,
+      height: 'medium',
+      textPosition: 'center',
+      parallax: true
+    },
+    avatar: {
+      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
+      borderWidth: 4,
+      borderColor: '#FFFFFF',
+      shadow: 'lg',
+      size: 'medium',
+      position: 'center',
+      zoom: 1,
+      rotation: 0
+    },
+    companyLogo: {
+      enabled: true,
+      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+      position: 'inline',
+      size: 'medium',
+      rounded: true,
+      shadow: true
+    },
+    profile: {
+      prefix: 'Mr.',
+      firstName: 'Murali',
+      lastName: 'Mohan',
+      designation: 'Computer Operator Pediatric Block',
+      company: 'MGM',
+      tagline: 'Healthcare IT & Operations Specialist',
+      about: 'Managing pediatric block IT systems and patient administration at MGM.',
+      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80'
+    },
+    contact: {
+      phone: '+91 98765 43210',
+      whatsapp: '+919876543210',
+      email: 'murali.mohan@mgm.org',
+      sms: '+919876543210',
+      website: 'https://mgm.org',
+      address: 'MGM Hospital, Pediatric Block',
+      googleMapsUrl: 'https://maps.google.com'
+    },
+    socialLinks: [],
+    customButtons: [],
+    about: {
+      enabled: true,
+      title: 'About Me',
+      description: 'Managing pediatric block IT systems and patient administration at MGM.',
+      readMoreEnabled: false
+    },
+    services: [],
+    products: [],
+    gallery: [],
+    videos: [],
+    testimonials: [],
+    certificates: [],
+    skills: [],
+    education: [],
+    experience: [],
+    downloads: [],
+    businessHours: {
+      monday: { enabled: true, openTime: '09:00', closeTime: '17:00', is24Hours: false },
+      tuesday: { enabled: true, openTime: '09:00', closeTime: '17:00', is24Hours: false },
+      wednesday: { enabled: true, openTime: '09:00', closeTime: '17:00', is24Hours: false },
+      thursday: { enabled: true, openTime: '09:00', closeTime: '17:00', is24Hours: false },
+      friday: { enabled: true, openTime: '09:00', closeTime: '17:00', is24Hours: false },
+      saturday: { enabled: false, openTime: '10:00', closeTime: '14:00', is24Hours: false },
+      sunday: { enabled: false, openTime: '10:00', closeTime: '14:00', is24Hours: false }
+    },
+    qrCode: {
+      enabled: true,
+      color: '#0f172a',
+      bgColor: '#ffffff',
+      gradientEnabled: false,
+      frameStyle: 'sleek',
+      foregroundColor: '#0f172a',
+      backgroundColor: '#ffffff',
+      includeLogo: true
+    },
+    seo: {
+      slug: 'murali',
+      metaTitle: 'Murali Mohan - Computer Operator Pediatric Block | MGM',
+      metaDescription: 'Digital Business Card for Murali Mohan, Computer Operator Pediatric Block at MGM.',
+      keywords: 'Murali Mohan, MGM, Pediatric Block'
+    },
+    analytics: {
+      views: 520,
+      visitors: 380,
+      qrScans: 85,
+      downloads: 42,
+      clicks: 190,
+      countries: [{ name: 'India', value: 100 }],
+      cities: [{ name: 'Puducherry', value: 80 }],
+      browsers: [{ name: 'Chrome', value: 90 }],
+      devices: [{ name: 'Mobile', value: 95 }],
+      operatingSystems: [{ name: 'Android', value: 85 }],
+      timeline: [{ date: 'Jul 20', views: 520, scans: 85 }]
+    }
+  },
   // 1. Corporate / Executive Template (Alex Rivera)
   {
     id: 'card-corporate',
