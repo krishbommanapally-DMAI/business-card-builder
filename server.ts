@@ -228,13 +228,28 @@ async function startServer() {
 
   // HTML page middleware to dynamically inject card profile picture & Open Graph metadata when link is shared
   app.get('*', async (req, res, next) => {
-    // Skip API routes and static asset files
-    if (req.path.startsWith('/api') || req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+    const pathLower = req.path.toLowerCase();
+
+    // 1. Skip API routes, Vite dev internal modules, and static asset files
+    if (
+      pathLower.startsWith('/api') ||
+      pathLower.startsWith('/@') ||
+      pathLower.startsWith('/src') ||
+      pathLower.startsWith('/node_modules') ||
+      pathLower.match(/\.(tsx|ts|jsx|js|mjs|cjs|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webmanifest)$/)
+    ) {
+      return next();
+    }
+
+    // 2. Only intercept requests that explicitly accept HTML content (browsers / social crawlers)
+    const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+    if (!acceptsHtml) {
       return next();
     }
 
     const host = req.headers.host || `localhost:${PORT}`;
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const rawProtocol = (req.headers['x-forwarded-proto'] as string) || 'https';
+    const protocol = rawProtocol.split(',')[0].trim();
     const fullUrl = `${protocol}://${host}${req.originalUrl}`;
 
     // Path like "/alexrivera" -> slug = "alexrivera"
@@ -270,7 +285,7 @@ async function startServer() {
       }
 
       if (templateHtml) {
-        const injectedHtml = injectMetaTags(templateHtml, card, fullUrl);
+        const injectedHtml = injectMetaTags(templateHtml, card, fullUrl, protocol, host);
         return res.status(200).set({ 'Content-Type': 'text/html' }).send(injectedHtml);
       }
     } catch (err) {
@@ -300,65 +315,65 @@ async function startServer() {
   });
 }
 
-function injectMetaTags(html: string, card: any | null, fullUrl: string): string {
-  if (!card) {
-    const defaultTitle = 'Digital CardNest - Professional Business Cards';
-    const defaultDesc = 'Create and share interactive digital business cards with profile previews, QR codes, and instant contact saving.';
-    const defaultImg = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80';
-    
-    const defaultMeta = `
-    <title>${escapeHtml(defaultTitle)}</title>
-    <meta name="description" content="${escapeHtml(defaultDesc)}" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="${escapeHtml(fullUrl)}" />
-    <meta property="og:title" content="${escapeHtml(defaultTitle)}" />
-    <meta property="og:description" content="${escapeHtml(defaultDesc)}" />
-    <meta property="og:image" content="${escapeHtml(defaultImg)}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${escapeHtml(defaultTitle)}" />
-    <meta name="twitter:description" content="${escapeHtml(defaultDesc)}" />
-    <meta name="twitter:image" content="${escapeHtml(defaultImg)}" />
-    `;
-    let clean = html.replace(/<title>.*?<\/title>/gi, '');
-    return clean.replace('</head>', `${defaultMeta}\n</head>`);
+function injectMetaTags(html: string, card: any | null, fullUrl: string, protocol: string, host: string): string {
+  const defaultTitle = 'Digital Business Cards - CardNest';
+  const defaultDesc = 'Create and share interactive digital business cards with instant profile previews, QR codes, and contact saving.';
+  const defaultImg = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80';
+
+  let titleStr = defaultTitle;
+  let descStr = defaultDesc;
+  let imageUrl = defaultImg;
+
+  if (card) {
+    const firstName = card.profile?.firstName || '';
+    const lastName = card.profile?.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim() || 'Digital Business Card';
+    const designation = card.profile?.designation || '';
+    const company = card.profile?.company || '';
+
+    titleStr = card.seo?.metaTitle || (designation ? `${fullName} - ${designation}` : fullName);
+    if (company && !titleStr.includes(company)) {
+      titleStr += ` | ${company}`;
+    }
+
+    descStr = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details & view portfolio.`;
+
+    const rawImg = card.avatar?.url || card.companyLogo?.url;
+    if (rawImg) {
+      imageUrl = rawImg;
+    }
   }
 
-  const firstName = card.profile?.firstName || '';
-  const lastName = card.profile?.lastName || '';
-  const fullName = `${firstName} ${lastName}`.trim() || 'Digital Business Card';
-  const designation = card.profile?.designation || '';
-  const company = card.profile?.company || '';
-  
-  let titleStr = card.seo?.metaTitle;
-  if (!titleStr) {
-    titleStr = designation ? `${fullName} - ${designation}` : fullName;
-    if (company) titleStr += ` | ${company}`;
+  // Ensure image URL is absolute (social crawlers like WhatsApp/iMessage require full http(s) URLs)
+  if (imageUrl.startsWith('/')) {
+    imageUrl = `${protocol}://${host}${imageUrl}`;
+  } else if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+    imageUrl = `${protocol}://${host}/${imageUrl}`;
   }
 
-  let descStr = card.seo?.metaDescription;
-  if (!descStr) {
-    descStr = card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details, view portfolio, and connect instantly.`;
+  let secureImageUrl = imageUrl;
+  if (imageUrl.startsWith('http://')) {
+    secureImageUrl = imageUrl.replace('http://', 'https://');
   }
-
-  const imageUrl = card.avatar?.url || card.companyLogo?.url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80';
 
   const metaTags = `
+    <!-- Dynamic Social Sharing Metadata -->
     <title>${escapeHtml(titleStr)}</title>
+    <meta name="title" content="${escapeHtml(titleStr)}" />
     <meta name="description" content="${escapeHtml(descStr)}" />
 
-    <!-- Open Graph / WhatsApp / Facebook / iMessage / LinkedIn / Slack -->
-    <meta property="og:type" content="profile" />
+    <!-- Open Graph / WhatsApp / iMessage / Facebook / LinkedIn / Slack -->
+    <meta property="og:type" content="website" />
     <meta property="og:url" content="${escapeHtml(fullUrl)}" />
     <meta property="og:title" content="${escapeHtml(titleStr)}" />
     <meta property="og:description" content="${escapeHtml(descStr)}" />
     <meta property="og:image" content="${escapeHtml(imageUrl)}" />
-    <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}" />
+    <meta property="og:image:secure_url" content="${escapeHtml(secureImageUrl)}" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="600" />
     <meta property="og:image:height" content="600" />
+    <meta property="og:image:alt" content="${escapeHtml(titleStr)}" />
     <meta property="og:site_name" content="CardNest Digital Cards" />
-    <meta property="profile:first_name" content="${escapeHtml(firstName)}" />
-    <meta property="profile:last_name" content="${escapeHtml(lastName)}" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -366,10 +381,14 @@ function injectMetaTags(html: string, card: any | null, fullUrl: string): string
     <meta name="twitter:title" content="${escapeHtml(titleStr)}" />
     <meta name="twitter:description" content="${escapeHtml(descStr)}" />
     <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
-    <meta name="twitter:image:alt" content="${escapeHtml(fullName)} Profile Image" />
+    <meta name="twitter:image:alt" content="${escapeHtml(titleStr)}" />
   `;
 
-  let cleanHtml = html.replace(/<title>.*?<\/title>/gi, '');
+  // Clean out existing titles & meta tags to avoid duplicate definitions
+  let cleanHtml = html
+    .replace(/<title>.*?<\/title>/gi, '')
+    .replace(/<meta\s+(name|property)=["'](og:|twitter:|description|title)[^>]*>/gi, '');
+
   return cleanHtml.replace('</head>', `${metaTags}\n</head>`);
 }
 
