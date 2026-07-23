@@ -317,33 +317,126 @@ async function startServer() {
   });
 }
 
+// Dynamic Open Graph Image Generator Endpoint (Matches Wireframe: Circular Avatar on Left, Name/Designation/Company on Right)
+app.get('/api/og-image', (req, res) => {
+  const slug = (req.query.slug || req.query.id || '').toString().toLowerCase();
+  const cards = readServerCards();
+  const card = cards.find(
+    c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
+  ) || cards[0];
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3000';
+
+  let avatarUrl = extractCardAvatarUrl(card);
+  if (avatarUrl && avatarUrl.startsWith('/')) {
+    avatarUrl = `${protocol}://${host}${avatarUrl}`;
+  }
+
+  const firstName = card?.profile?.firstName || '';
+  const lastName = card?.profile?.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Digital Business Card';
+  const designation = card?.profile?.designation || '';
+  const company = card?.profile?.company || '';
+  const primaryColor = card?.theme?.primaryColor || '#4f46e5';
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#090d16" />
+          <stop offset="50%" stop-color="#0f172a" />
+          <stop offset="100%" stop-color="#1e1b4b" />
+        </linearGradient>
+        <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e293b" />
+          <stop offset="100%" stop-color="#0f172a" />
+        </linearGradient>
+        <clipPath id="avatarClip">
+          <circle cx="280" cy="315" r="120" />
+        </clipPath>
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="20" stdDeviation="25" flood-color="#000000" flood-opacity="0.6"/>
+        </filter>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="40" result="blur" />
+        </filter>
+      </defs>
+
+      <!-- Outer Background -->
+      <rect width="1200" height="630" fill="url(#bg)" />
+
+      <!-- Ambient Glow Behind Avatar -->
+      <circle cx="280" cy="315" r="170" fill="${escapeHtml(primaryColor)}" opacity="0.35" filter="url(#glow)" />
+
+      <!-- Main Profile Card Container (Wireframe Image 2 Style) -->
+      <rect x="90" y="115" width="1020" height="400" rx="48" fill="url(#cardBg)" stroke="#334155" stroke-width="3" filter="url(#shadow)" />
+
+      <!-- Circular Avatar Frame (Left Side) -->
+      <circle cx="280" cy="315" r="128" fill="${escapeHtml(primaryColor)}" opacity="0.8" />
+      <circle cx="280" cy="315" r="122" fill="#0f172a" />
+      ${
+        avatarUrl
+          ? `<image href="${escapeHtml(avatarUrl)}" x="160" y="195" width="240" height="240" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatarClip)" />`
+          : `<text x="280" y="338" font-family="system-ui, -apple-system, sans-serif" font-size="76" font-weight="bold" fill="#a5b4fc" text-anchor="middle">${escapeHtml(firstName[0] || 'D')}${escapeHtml(lastName[0] || 'C')}</text>`
+      }
+
+      <!-- Profile Details Stack (Right Side) -->
+      <!-- Full Name -->
+      <text x="450" y="270" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" fill="#ffffff" letter-spacing="-0.5">
+        ${escapeHtml(fullName)}
+      </text>
+
+      <!-- Designation Role -->
+      <text x="450" y="332" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="#a5b4fc">
+        ${escapeHtml(designation || 'Digital Business Card')}
+      </text>
+
+      <!-- Company Name -->
+      <text x="450" y="385" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#38bdf8">
+        ${escapeHtml(company)}
+      </text>
+
+      <!-- CardNest Brand Tag -->
+      <rect x="820" y="442" width="250" height="42" rx="14" fill="#020617" opacity="0.85" stroke="#1e293b" stroke-width="1.5" />
+      <text x="945" y="468" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" fill="#94a3b8" text-anchor="middle">
+        CardNest Digital Card
+      </text>
+    </svg>
+  `;
+
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.send(svg);
+});
+
 function extractCardAvatarUrl(card: any): string | null {
   if (!card) return null;
 
   // 1. Check card.avatar
-  if (typeof card.avatar === 'string' && card.avatar.trim().startsWith('http')) {
+  if (typeof card.avatar === 'string' && card.avatar.trim()) {
     return card.avatar.trim();
   }
-  if (card.avatar && typeof card.avatar === 'object' && typeof card.avatar.url === 'string' && card.avatar.url.trim().startsWith('http')) {
+  if (card.avatar && typeof card.avatar === 'object' && typeof card.avatar.url === 'string' && card.avatar.url.trim()) {
     return card.avatar.url.trim();
   }
 
-  // 2. Check card.companyLogo
-  if (typeof card.companyLogo === 'string' && card.companyLogo.trim().startsWith('http')) {
-    return card.companyLogo.trim();
-  }
-  if (card.companyLogo && typeof card.companyLogo === 'object' && typeof card.companyLogo.url === 'string' && card.companyLogo.url.trim().startsWith('http')) {
-    return card.companyLogo.url.trim();
+  // 2. Check card.profile.avatarUrl
+  if (card.profile && typeof card.profile.avatarUrl === 'string' && card.profile.avatarUrl.trim()) {
+    return card.profile.avatarUrl.trim();
   }
 
-  // 3. Check card.profile.avatarUrl
-  if (card.profile && typeof card.profile.avatarUrl === 'string' && card.profile.avatarUrl.trim().startsWith('http')) {
-    return card.profile.avatarUrl.trim();
+  // 3. Check card.companyLogo
+  if (typeof card.companyLogo === 'string' && card.companyLogo.trim()) {
+    return card.companyLogo.trim();
+  }
+  if (card.companyLogo && typeof card.companyLogo === 'object' && typeof card.companyLogo.url === 'string' && card.companyLogo.url.trim()) {
+    return card.companyLogo.url.trim();
   }
 
   // 4. Check gallery image
   if (Array.isArray(card.gallery) && card.gallery.length > 0 && card.gallery[0]?.url) {
-    if (typeof card.gallery[0].url === 'string' && card.gallery[0].url.trim().startsWith('http')) {
+    if (typeof card.gallery[0].url === 'string' && card.gallery[0].url.trim()) {
       return card.gallery[0].url.trim();
     }
   }
@@ -354,8 +447,7 @@ function extractCardAvatarUrl(card: any): string | null {
 function injectMetaTags(html: string, card: any | null, fullUrl: string, protocol: string, host: string): string {
   const defaultTitle = 'Digital Business Cards - CardNest';
   const defaultDesc = 'Create and share interactive digital business cards with instant profile previews, QR codes, and contact saving.';
-  // Abstract digital card background image (neutral, non-person image)
-  const defaultImg = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+  const defaultImg = `${protocol}://${host}/api/og-image`;
 
   let titleStr = defaultTitle;
   let descStr = defaultDesc;
@@ -375,10 +467,8 @@ function injectMetaTags(html: string, card: any | null, fullUrl: string, protoco
 
     descStr = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details & view portfolio.`;
 
-    const cardAvatar = extractCardAvatarUrl(card);
-    if (cardAvatar) {
-      imageUrl = cardAvatar;
-    }
+    // Always prefer the dynamic OG image endpoint which generates the exact card layout matching Image 2
+    imageUrl = `${protocol}://${host}/api/og-image?slug=${encodeURIComponent(card.slug || card.id)}&v=${card.updatedAt ? new Date(card.updatedAt).getTime() : Date.now()}`;
   }
 
   // Ensure image URL is absolute (social crawlers like WhatsApp/iMessage require full http(s) URLs)
