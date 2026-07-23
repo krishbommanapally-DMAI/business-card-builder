@@ -262,8 +262,9 @@ END:VCARD`;
     const designation = card.profile?.designation || '';
     const company = card.profile?.company || '';
     const shareTitle = `${fullName} - Digital Business Card`;
-    const shareText = `Digital Business Card for ${fullName}${designation ? ` (${designation})` : ''}. View profile & save contact details:`;
     const shareUrl = window.location.href;
+
+    const shareText = `🎴 ${fullName}${designation ? ` - ${designation}` : ''}${company ? ` | ${company}` : ''}\nView Digital Business Card & save contact details:`;
 
     if (navigator.share) {
       try {
@@ -400,7 +401,9 @@ END:VCARD`;
               )}
               {card.contact.whatsapp && (
                 <a 
-                  href={`https://wa.me/${card.contact.whatsapp.replace(/[^0-9]/g, '')}`}
+                  href={`https://wa.me/${card.contact.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    `Hello ${card.profile.firstName || ''}! I am connecting with you via your digital business card:\n${window.location.href}`
+                  )}`}
                   target="_blank"
                   rel="noreferrer"
                   className={`py-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border shadow-sm ${isDark ? 'bg-slate-900 border-slate-800 hover:bg-slate-850' : 'bg-slate-100/80 border-slate-200/80 hover:bg-slate-200/60'}`}
@@ -780,10 +783,30 @@ END:VCARD`;
 
               <button
                 onClick={() => {
-                  const phone = card.contact?.whatsapp || card.contact?.phone || '';
-                  const cleanPhone = phone.replace(/[^0-9]/g, '');
-                  const text = encodeURIComponent(`Hi! Check out my digital business card:\n${window.location.href}`);
-                  window.open(cleanPhone ? `https://wa.me/${cleanPhone}?text=${text}` : `https://wa.me/?text=${text}`, '_blank');
+                  const firstName = card.profile?.firstName || '';
+                  const lastName = card.profile?.lastName || '';
+                  const fullName = `${firstName} ${lastName}`.trim() || 'Digital Business Card';
+                  const designation = card.profile?.designation || '';
+                  const company = card.profile?.company || '';
+                  const phone = card.contact?.phone || card.contact?.whatsapp || '';
+                  const email = card.contact?.email || '';
+                  const shareUrl = window.location.href;
+
+                  const textLines = [
+                    `🎴 *${fullName}*`,
+                    designation ? `💼 ${designation}` : '',
+                    company ? `🏢 ${company}` : '',
+                    phone ? `📞 ${phone}` : '',
+                    email ? `✉️ ${email}` : '',
+                    '',
+                    `🔗 *Digital Business Card:*`,
+                    shareUrl
+                  ].filter(Boolean);
+
+                  const fullText = textLines.join('\n');
+                  const encodedText = encodeURIComponent(fullText);
+                  
+                  window.open(`https://wa.me/?text=${encodedText}`, '_blank');
                 }}
                 className="py-2.5 px-3 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
