@@ -84,6 +84,7 @@ export interface ProfileInfo {
   company: string;
   tagline: string;
   about: string;
+  avatarUrl?: string;
 }
 
 export interface ContactInfo {
