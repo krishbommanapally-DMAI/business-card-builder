@@ -224,13 +224,69 @@ app.delete('/api/cards/:id', (req, res) => {
 });
 
 async function startServer() {
+  let viteServer: any = null;
+
+  // HTML page middleware to dynamically inject card profile picture & Open Graph metadata when link is shared
+  app.get('*', async (req, res, next) => {
+    // Skip API routes and static asset files
+    if (req.path.startsWith('/api') || req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+      return next();
+    }
+
+    const host = req.headers.host || `localhost:${PORT}`;
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const fullUrl = `${protocol}://${host}${req.originalUrl}`;
+
+    // Path like "/alexrivera" -> slug = "alexrivera"
+    const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
+    const slug = cleanPath.split('/')[0]?.toLowerCase();
+
+    let card = null;
+    if (slug) {
+      const cards = readServerCards();
+      card = cards.find(
+        c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
+      );
+    }
+
+    try {
+      let templateHtml = '';
+      if (process.env.NODE_ENV !== 'production' && viteServer) {
+        const indexFilePath = path.join(process.cwd(), 'index.html');
+        if (fs.existsSync(indexFilePath)) {
+          const rawHtml = fs.readFileSync(indexFilePath, 'utf-8');
+          templateHtml = await viteServer.transformIndexHtml(req.originalUrl, rawHtml);
+        }
+      } else {
+        const distIndexPath = path.join(process.cwd(), 'dist', 'index.html');
+        if (fs.existsSync(distIndexPath)) {
+          templateHtml = fs.readFileSync(distIndexPath, 'utf-8');
+        } else {
+          const rootIndexPath = path.join(process.cwd(), 'index.html');
+          if (fs.existsSync(rootIndexPath)) {
+            templateHtml = fs.readFileSync(rootIndexPath, 'utf-8');
+          }
+        }
+      }
+
+      if (templateHtml) {
+        const injectedHtml = injectMetaTags(templateHtml, card, fullUrl);
+        return res.status(200).set({ 'Content-Type': 'text/html' }).send(injectedHtml);
+      }
+    } catch (err) {
+      console.error('Error serving HTML with dynamic preview meta tags:', err);
+    }
+
+    next();
+  });
+
   // Vite middleware integration for development mode
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
+    viteServer = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
-    app.use(vite.middlewares);
+    app.use(viteServer.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
@@ -242,6 +298,89 @@ async function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
+}
+
+function injectMetaTags(html: string, card: any | null, fullUrl: string): string {
+  if (!card) {
+    const defaultTitle = 'Digital CardNest - Professional Business Cards';
+    const defaultDesc = 'Create and share interactive digital business cards with profile previews, QR codes, and instant contact saving.';
+    const defaultImg = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80';
+    
+    const defaultMeta = `
+    <title>${escapeHtml(defaultTitle)}</title>
+    <meta name="description" content="${escapeHtml(defaultDesc)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${escapeHtml(fullUrl)}" />
+    <meta property="og:title" content="${escapeHtml(defaultTitle)}" />
+    <meta property="og:description" content="${escapeHtml(defaultDesc)}" />
+    <meta property="og:image" content="${escapeHtml(defaultImg)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(defaultTitle)}" />
+    <meta name="twitter:description" content="${escapeHtml(defaultDesc)}" />
+    <meta name="twitter:image" content="${escapeHtml(defaultImg)}" />
+    `;
+    let clean = html.replace(/<title>.*?<\/title>/gi, '');
+    return clean.replace('</head>', `${defaultMeta}\n</head>`);
+  }
+
+  const firstName = card.profile?.firstName || '';
+  const lastName = card.profile?.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Digital Business Card';
+  const designation = card.profile?.designation || '';
+  const company = card.profile?.company || '';
+  
+  let titleStr = card.seo?.metaTitle;
+  if (!titleStr) {
+    titleStr = designation ? `${fullName} - ${designation}` : fullName;
+    if (company) titleStr += ` | ${company}`;
+  }
+
+  let descStr = card.seo?.metaDescription;
+  if (!descStr) {
+    descStr = card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details, view portfolio, and connect instantly.`;
+  }
+
+  const imageUrl = card.avatar?.url || card.companyLogo?.url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80';
+
+  const metaTags = `
+    <title>${escapeHtml(titleStr)}</title>
+    <meta name="description" content="${escapeHtml(descStr)}" />
+
+    <!-- Open Graph / WhatsApp / Facebook / iMessage / LinkedIn / Slack -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:url" content="${escapeHtml(fullUrl)}" />
+    <meta property="og:title" content="${escapeHtml(titleStr)}" />
+    <meta property="og:description" content="${escapeHtml(descStr)}" />
+    <meta property="og:image" content="${escapeHtml(imageUrl)}" />
+    <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="600" />
+    <meta property="og:site_name" content="CardNest Digital Cards" />
+    <meta property="profile:first_name" content="${escapeHtml(firstName)}" />
+    <meta property="profile:last_name" content="${escapeHtml(lastName)}" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="${escapeHtml(fullUrl)}" />
+    <meta name="twitter:title" content="${escapeHtml(titleStr)}" />
+    <meta name="twitter:description" content="${escapeHtml(descStr)}" />
+    <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(fullName)} Profile Image" />
+  `;
+
+  let cleanHtml = html.replace(/<title>.*?<\/title>/gi, '');
+  return cleanHtml.replace('</head>', `${metaTags}\n</head>`);
+}
+
+function escapeHtml(str: string): string {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 startServer();
