@@ -275,13 +275,17 @@ function extractSlugFromReq(req: express.Request): string | null {
 
 // Helper to find card by slug or ID or full name match
 function findCardBySlug(cards: any[], slug: string | null): any | null {
-  if (!slug) return null;
-  const cleanSlug = slug.toLowerCase().replace(/\s+/g, '');
-  return cards.find(
-    c => (c.slug && c.slug.toLowerCase().replace(/\s+/g, '') === cleanSlug) ||
-         (c.id && c.id.toLowerCase() === cleanSlug) ||
-         (c.profile && `${c.profile.firstName || ''}${c.profile.lastName || ''}`.toLowerCase().replace(/\s+/g, '') === cleanSlug)
-  ) || null;
+  if (Array.isArray(cards) && cards.length > 0) {
+    if (!slug) return cards[0];
+    const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const found = cards.find(
+      c => (c.slug && c.slug.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanSlug) ||
+           (c.id && c.id.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanSlug) ||
+           (c.profile && `${c.profile.firstName || ''}${c.profile.lastName || ''}`.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanSlug)
+    );
+    return found || cards[0];
+  }
+  return null;
 }
 
 // API Routes
@@ -545,9 +549,9 @@ function extractCardAvatarUrl(card: any): string | null {
 }
 
 function injectMetaTags(html: string, card: any | null, fullUrl: string, protocol: string, host: string): string {
-  const defaultTitle = 'Digital Business Cards - CardNest';
-  const defaultDesc = 'Create and share interactive digital business cards with instant profile previews, QR codes, and contact saving.';
-  const defaultImg = `${protocol}://${host}/api/og-image`;
+  const defaultTitle = 'Murali Mohan - Computer Operator Pediatric Block | MGM';
+  const defaultDesc = 'Digital Business Card for Murali Mohan, Computer Operator Pediatric Block at MGM. Save contact details & view profile.';
+  const defaultImg = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80';
 
   let titleStr = defaultTitle;
   let descStr = defaultDesc;
