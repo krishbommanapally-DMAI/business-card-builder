@@ -136,6 +136,80 @@ const defaultCards = [
       qrScans: 156,
       downloads: 88
     }
+  },
+  {
+    id: 'card-murali',
+    userId: 'user-murali',
+    slug: 'murali',
+    templateId: 'modern_executive',
+    status: 'published',
+    createdAt: '2026-01-15T10:00:00.000Z',
+    updatedAt: new Date().toISOString(),
+    profile: {
+      firstName: 'Murali',
+      lastName: 'Mohan',
+      designation: 'Computer Operator Pediatric Block',
+      company: 'MGM',
+      tagline: 'Healthcare IT & Operations Specialist.',
+      about: 'Managing pediatric block IT systems and patient administration at MGM.'
+    },
+    avatar: {
+      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
+      shape: 'rounded-full',
+      border: true
+    },
+    companyLogo: {
+      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'
+    },
+    hero: {
+      enabled: true,
+      type: 'gradient',
+      gradientStart: '#2563eb',
+      gradientEnd: '#1e40af'
+    },
+    theme: {
+      template: 'modern_executive',
+      primaryColor: '#2563eb',
+      secondaryColor: '#0f172a',
+      backgroundColor: '#ffffff',
+      textColor: '#0f172a',
+      fontFamily: 'Inter',
+      borderRadius: '1rem',
+      cardStyle: 'glass',
+      customCss: ''
+    },
+    contact: {
+      email: 'murali.mohan@mgm.org',
+      phone: '+91 98765 43210',
+      whatsapp: '+919876543210',
+      website: 'https://mgm.org',
+      location: 'MGM Hospital, Pediatric Block'
+    },
+    socialLinks: [],
+    customButtons: [],
+    about: {
+      enabled: true,
+      title: 'About Me',
+      content: 'Managing pediatric block IT systems and patient administration at MGM.'
+    },
+    services: [],
+    products: [],
+    gallery: [],
+    videos: [],
+    testimonials: [],
+    certificates: [],
+    skills: [],
+    education: [],
+    experience: [],
+    downloads: [],
+    businessHours: { enabled: true, hours: {} },
+    qrCode: { foregroundColor: '#0f172a', backgroundColor: '#ffffff', includeLogo: true, style: 'dots' },
+    seo: {
+      metaTitle: 'Murali Mohan - Computer Operator Pediatric Block | MGM',
+      metaDescription: 'Digital Business Card for Murali Mohan, Computer Operator Pediatric Block at MGM.',
+      keywords: 'Murali Mohan, MGM, Pediatric Block'
+    },
+    analytics: { views: 520, uniqueVisitors: 380, clicks: 190, qrScans: 85, downloads: 42 }
   }
 ];
 
@@ -145,6 +219,17 @@ function readServerCards(): any[] {
       const data = fs.readFileSync(cardsFilePath, 'utf-8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        let updated = false;
+        for (const defCard of defaultCards) {
+          const exists = parsed.some(c => (c.slug && c.slug.toLowerCase() === defCard.slug.toLowerCase()) || c.id === defCard.id);
+          if (!exists) {
+            parsed.push(defCard);
+            updated = true;
+          }
+        }
+        if (updated) {
+          writeServerCards(parsed);
+        }
         return parsed;
       }
     }
@@ -164,6 +249,41 @@ function writeServerCards(cards: any[]): void {
   }
 }
 
+// Helper to extract card slug from URL query or path
+function extractSlugFromReq(req: express.Request): string | null {
+  let slug = (req.query.card || req.query.slug || req.query.u || req.query.id || '').toString().toLowerCase().trim();
+  if (slug) return slug;
+
+  const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
+  if (!cleanPath) return null;
+
+  const parts = cleanPath.split('/');
+  if (parts.length === 0) return null;
+
+  const reserved = ['dashboard', 'admin', 'builder', 'login', 'landing', 'signup', 'register', 'api', 'assets', 'favicon.ico'];
+  
+  if (['card', 'c', 'u', 'p', 'profile'].includes(parts[0].toLowerCase()) && parts[1]) {
+    return parts[1].toLowerCase().trim();
+  }
+
+  if (!reserved.includes(parts[0].toLowerCase())) {
+    return parts[0].toLowerCase().trim();
+  }
+
+  return null;
+}
+
+// Helper to find card by slug or ID or full name match
+function findCardBySlug(cards: any[], slug: string | null): any | null {
+  if (!slug) return null;
+  const cleanSlug = slug.toLowerCase().replace(/\s+/g, '');
+  return cards.find(
+    c => (c.slug && c.slug.toLowerCase().replace(/\s+/g, '') === cleanSlug) ||
+         (c.id && c.id.toLowerCase() === cleanSlug) ||
+         (c.profile && `${c.profile.firstName || ''}${c.profile.lastName || ''}`.toLowerCase().replace(/\s+/g, '') === cleanSlug)
+  ) || null;
+}
+
 // API Routes
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
@@ -179,9 +299,7 @@ app.get('/api/cards', (_req, res) => {
 app.get('/api/cards/:slug', (req, res) => {
   const slug = req.params.slug.toLowerCase();
   const cards = readServerCards();
-  const card = cards.find(
-    c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
-  );
+  const card = findCardBySlug(cards, slug);
 
   if (card) {
     res.json({ success: true, card });
@@ -231,28 +349,22 @@ async function startServer() {
       appType: 'spa',
     });
 
-    // Intercept social media crawlers in dev mode to serve dynamic card profile preview images
+    // Intercept all HTML page requests in dev mode to inject dynamic Open Graph & social preview meta tags
     app.use(async (req, res, next) => {
-      const userAgent = (req.headers['user-agent'] || '').toLowerCase();
-      const isSocialCrawler = /facebookexternalhit|whatsapp|twitterbot|linkedinbot|slackbot|telegrambot|discordbot|applebot|crawler|spider|bot/i.test(userAgent);
-      const isHtmlRequest = req.headers.accept && req.headers.accept.includes('text/html');
+      const isApiOrAsset = req.path.startsWith('/api') || 
+                           req.path.startsWith('/assets') || 
+                           req.path.startsWith('/@') || 
+                           (req.path.includes('.') && !req.path.endsWith('.html'));
 
-      if (isSocialCrawler && isHtmlRequest && !req.path.startsWith('/api')) {
+      if (!isApiOrAsset) {
         const host = req.headers.host || `localhost:${PORT}`;
         const rawProtocol = (req.headers['x-forwarded-proto'] as string) || 'https';
         const protocol = rawProtocol.split(',')[0].trim();
         const fullUrl = `${protocol}://${host}${req.originalUrl}`;
 
-        const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
-        const slug = cleanPath.split('/')[0]?.toLowerCase();
-
-        let card = null;
-        if (slug) {
-          const cards = readServerCards();
-          card = cards.find(
-            c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
-          );
-        }
+        const slug = extractSlugFromReq(req);
+        const cards = readServerCards();
+        const card = findCardBySlug(cards, slug);
 
         try {
           const indexFilePath = path.join(process.cwd(), 'index.html');
@@ -263,7 +375,7 @@ async function startServer() {
             return res.status(200).set({ 'Content-Type': 'text/html' }).send(injectedHtml);
           }
         } catch (err) {
-          console.error('Error handling crawler meta tags in dev mode:', err);
+          console.error('Error handling meta tags in dev mode:', err);
         }
       }
 
@@ -281,16 +393,9 @@ async function startServer() {
       const protocol = rawProtocol.split(',')[0].trim();
       const fullUrl = `${protocol}://${host}${req.originalUrl}`;
 
-      const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
-      const slug = cleanPath.split('/')[0]?.toLowerCase();
-
-      let card = null;
-      if (slug) {
-        const cards = readServerCards();
-        card = cards.find(
-          c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
-        );
-      }
+      const slug = extractSlugFromReq(req);
+      const cards = readServerCards();
+      const card = findCardBySlug(cards, slug);
 
       const distIndexPath = path.join(distPath, 'index.html');
       let templateHtml = '';
@@ -317,13 +422,11 @@ async function startServer() {
   });
 }
 
-// Dynamic Open Graph Image Generator Endpoint (Matches Wireframe: Circular Avatar on Left, Name/Designation/Company on Right)
+// Dynamic Open Graph Image Generator Endpoint
 app.get('/api/og-image', (req, res) => {
   const slug = (req.query.slug || req.query.id || '').toString().toLowerCase();
   const cards = readServerCards();
-  const card = cards.find(
-    c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
-  ) || cards[0];
+  const card = findCardBySlug(cards, slug) || cards[0];
 
   const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3000';
@@ -331,6 +434,11 @@ app.get('/api/og-image', (req, res) => {
   let avatarUrl = extractCardAvatarUrl(card);
   if (avatarUrl && avatarUrl.startsWith('/')) {
     avatarUrl = `${protocol}://${host}${avatarUrl}`;
+  }
+
+  // If a profile photo URL is available, 302 redirect directly so WhatsApp / Facebook / Twitter scrapers receive a 200 image/jpeg
+  if (avatarUrl && (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'))) {
+    return res.redirect(302, avatarUrl);
   }
 
   const firstName = card?.profile?.firstName || '';
@@ -369,7 +477,7 @@ app.get('/api/og-image', (req, res) => {
       <!-- Ambient Glow Behind Avatar -->
       <circle cx="280" cy="315" r="170" fill="${escapeHtml(primaryColor)}" opacity="0.35" filter="url(#glow)" />
 
-      <!-- Main Profile Card Container (Wireframe Image 2 Style) -->
+      <!-- Main Profile Card Container -->
       <rect x="90" y="115" width="1020" height="400" rx="48" fill="url(#cardBg)" stroke="#334155" stroke-width="3" filter="url(#shadow)" />
 
       <!-- Circular Avatar Frame (Left Side) -->
@@ -382,22 +490,18 @@ app.get('/api/og-image', (req, res) => {
       }
 
       <!-- Profile Details Stack (Right Side) -->
-      <!-- Full Name -->
       <text x="450" y="270" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" fill="#ffffff" letter-spacing="-0.5">
         ${escapeHtml(fullName)}
       </text>
 
-      <!-- Designation Role -->
       <text x="450" y="332" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="#a5b4fc">
         ${escapeHtml(designation || 'Digital Business Card')}
       </text>
 
-      <!-- Company Name -->
       <text x="450" y="385" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#38bdf8">
         ${escapeHtml(company)}
       </text>
 
-      <!-- CardNest Brand Tag -->
       <rect x="820" y="442" width="250" height="42" rx="14" fill="#020617" opacity="0.85" stroke="#1e293b" stroke-width="1.5" />
       <text x="945" y="468" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" fill="#94a3b8" text-anchor="middle">
         CardNest Digital Card
@@ -413,7 +517,6 @@ app.get('/api/og-image', (req, res) => {
 function extractCardAvatarUrl(card: any): string | null {
   if (!card) return null;
 
-  // 1. Check card.avatar
   if (typeof card.avatar === 'string' && card.avatar.trim()) {
     return card.avatar.trim();
   }
@@ -421,12 +524,10 @@ function extractCardAvatarUrl(card: any): string | null {
     return card.avatar.url.trim();
   }
 
-  // 2. Check card.profile.avatarUrl
   if (card.profile && typeof card.profile.avatarUrl === 'string' && card.profile.avatarUrl.trim()) {
     return card.profile.avatarUrl.trim();
   }
 
-  // 3. Check card.companyLogo
   if (typeof card.companyLogo === 'string' && card.companyLogo.trim()) {
     return card.companyLogo.trim();
   }
@@ -434,7 +535,6 @@ function extractCardAvatarUrl(card: any): string | null {
     return card.companyLogo.url.trim();
   }
 
-  // 4. Check gallery image
   if (Array.isArray(card.gallery) && card.gallery.length > 0 && card.gallery[0]?.url) {
     if (typeof card.gallery[0].url === 'string' && card.gallery[0].url.trim()) {
       return card.gallery[0].url.trim();
@@ -465,13 +565,16 @@ function injectMetaTags(html: string, card: any | null, fullUrl: string, protoco
       titleStr += ` | ${company}`;
     }
 
-    descStr = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details & view portfolio.`;
+    descStr = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}. Save contact details & view profile.`;
 
-    // Always prefer the dynamic OG image endpoint which generates the exact card layout matching Image 2
-    imageUrl = `${protocol}://${host}/api/og-image?slug=${encodeURIComponent(card.slug || card.id)}&v=${card.updatedAt ? new Date(card.updatedAt).getTime() : Date.now()}`;
+    const cardAvatar = extractCardAvatarUrl(card);
+    if (cardAvatar && (cardAvatar.startsWith('http://') || cardAvatar.startsWith('https://'))) {
+      imageUrl = cardAvatar;
+    } else {
+      imageUrl = `${protocol}://${host}/api/og-image?slug=${encodeURIComponent(card.slug || card.id)}&v=${card.updatedAt ? new Date(card.updatedAt).getTime() : Date.now()}`;
+    }
   }
 
-  // Ensure image URL is absolute (social crawlers like WhatsApp/iMessage require full http(s) URLs)
   if (imageUrl.startsWith('/')) {
     imageUrl = `${protocol}://${host}${imageUrl}`;
   } else if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
@@ -490,7 +593,7 @@ function injectMetaTags(html: string, card: any | null, fullUrl: string, protoco
     <meta name="description" content="${escapeHtml(descStr)}" />
 
     <!-- Open Graph / WhatsApp / iMessage / Facebook / LinkedIn / Slack -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="profile" />
     <meta property="og:url" content="${escapeHtml(fullUrl)}" />
     <meta property="og:title" content="${escapeHtml(titleStr)}" />
     <meta property="og:description" content="${escapeHtml(descStr)}" />
@@ -511,7 +614,6 @@ function injectMetaTags(html: string, card: any | null, fullUrl: string, protoco
     <meta name="twitter:image:alt" content="${escapeHtml(titleStr)}" />
   `;
 
-  // Clean out existing titles & meta tags to avoid duplicate definitions
   let cleanHtml = html
     .replace(/<title>.*?<\/title>/gi, '')
     .replace(/<meta\s+(name|property)=["'](og:|twitter:|description|title)[^>]*>/gi, '');
