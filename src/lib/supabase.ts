@@ -317,22 +317,44 @@ function extractColumnNameFromError(message: string): string | null {
 }
 
 /**
- * Fetches all digital cards from central server storage and Supabase database.
+ * Fetches all digital cards from central server storage, local browser storage, and Supabase database.
  */
 export async function dbFetchCards(): Promise<DigitalCard[]> {
-  let serverCards: DigitalCard[] = [];
+  const cardMap = new Map<string, DigitalCard>();
+
+  // 1. Fetch cards from central server API
   try {
     const res = await fetch('/api/cards');
     if (res.ok) {
       const data = await res.json();
       if (data && data.success && Array.isArray(data.cards)) {
-        serverCards = data.cards;
+        data.cards.forEach((c: DigitalCard) => {
+          if (c && c.id) cardMap.set(c.id, c);
+        });
       }
     }
   } catch (err) {
     console.warn('Could not fetch cards from server API:', err);
   }
 
+  // 2. Merge cards from browser localStorage
+  try {
+    const rawLocal = localStorage.getItem('cardnest_local_cards');
+    if (rawLocal) {
+      const parsed = JSON.parse(rawLocal);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((c: DigitalCard) => {
+          if (c && c.id && !cardMap.has(c.id)) {
+            cardMap.set(c.id, c);
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read cards from localStorage:', err);
+  }
+
+  // 3. Query Supabase if configured
   if (isSupabaseConfigured) {
     try {
       const { data, error } = await supabase
@@ -342,22 +364,31 @@ export async function dbFetchCards(): Promise<DigitalCard[]> {
         
       if (!error && data && data.length > 0) {
         const sbCards = data.map(mapRowToCard);
-        // Combine server and Supabase cards, preferring live Supabase if available
-        const cardMap = new Map<string, DigitalCard>();
-        serverCards.forEach(c => cardMap.set(c.id, c));
-        sbCards.forEach(c => cardMap.set(c.id, c));
-        return Array.from(cardMap.values());
+        sbCards.forEach(c => {
+          if (c && c.id) cardMap.set(c.id, c);
+        });
       }
     } catch (err) {
-      console.warn('Failed to fetch cards from Supabase, returning server cards.', err);
+      console.warn('Failed to fetch cards from Supabase:', err);
     }
   }
 
-  return serverCards;
+  const allCards = Array.from(cardMap.values());
+
+  // 4. Background sync any new cards to server /api/cards so server preview links work
+  allCards.forEach(card => {
+    fetch('/api/cards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ card })
+    }).catch(() => {});
+  });
+
+  return allCards;
 }
 
 /**
- * Fetches a single digital card by its slug from server API or Supabase.
+ * Fetches a single digital card by its slug or ID from server API, Supabase, or localStorage.
  */
 export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | null> {
   if (!slug) return null;
@@ -396,12 +427,41 @@ export async function dbFetchCardBySlug(slug: string): Promise<DigitalCard | nul
       }
 
       if (data) {
-        return mapRowToCard(data);
+        const card = mapRowToCard(data);
+        // Sync to server API
+        fetch('/api/cards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ card })
+        }).catch(() => {});
+        return card;
       }
     } catch (err) {
       console.warn(`Supabase lookup failed for slug "${cleanSlug}":`, err);
     }
   }
+
+  // 3. Fallback to localStorage
+  try {
+    const rawLocal = localStorage.getItem('cardnest_local_cards');
+    if (rawLocal) {
+      const parsed = JSON.parse(rawLocal);
+      if (Array.isArray(parsed)) {
+        const found = parsed.find(
+          (c: DigitalCard) => (c.slug && c.slug.toLowerCase() === cleanSlug) || (c.id && c.id.toLowerCase() === cleanSlug)
+        );
+        if (found) {
+          // Sync to server API
+          fetch('/api/cards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ card: found })
+          }).catch(() => {});
+          return found;
+        }
+      }
+    }
+  } catch (e) {}
 
   return null;
 }
