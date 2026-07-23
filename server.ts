@@ -224,63 +224,82 @@ app.delete('/api/cards/:id', (req, res) => {
 });
 
 async function startServer() {
-  let viteServer: any = null;
+  // Vite middleware integration for development mode
+  if (process.env.NODE_ENV !== 'production') {
+    const viteServer = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
 
-  // HTML page middleware to dynamically inject card profile picture & Open Graph metadata when link is shared
-  app.get('*', async (req, res, next) => {
-    const pathLower = req.path.toLowerCase();
+    // Intercept social media crawlers in dev mode to serve dynamic card profile preview images
+    app.use(async (req, res, next) => {
+      const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+      const isSocialCrawler = /facebookexternalhit|whatsapp|twitterbot|linkedinbot|slackbot|telegrambot|discordbot|applebot|crawler|spider|bot/i.test(userAgent);
+      const isHtmlRequest = req.headers.accept && req.headers.accept.includes('text/html');
 
-    // 1. Skip API routes, Vite dev internal modules, and static asset files
-    if (
-      pathLower.startsWith('/api') ||
-      pathLower.startsWith('/@') ||
-      pathLower.startsWith('/src') ||
-      pathLower.startsWith('/node_modules') ||
-      pathLower.match(/\.(tsx|ts|jsx|js|mjs|cjs|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webmanifest)$/)
-    ) {
-      return next();
-    }
+      if (isSocialCrawler && isHtmlRequest && !req.path.startsWith('/api')) {
+        const host = req.headers.host || `localhost:${PORT}`;
+        const rawProtocol = (req.headers['x-forwarded-proto'] as string) || 'https';
+        const protocol = rawProtocol.split(',')[0].trim();
+        const fullUrl = `${protocol}://${host}${req.originalUrl}`;
 
-    // 2. Only intercept requests that explicitly accept HTML content (browsers / social crawlers)
-    const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
-    if (!acceptsHtml) {
-      return next();
-    }
+        const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
+        const slug = cleanPath.split('/')[0]?.toLowerCase();
 
-    const host = req.headers.host || `localhost:${PORT}`;
-    const rawProtocol = (req.headers['x-forwarded-proto'] as string) || 'https';
-    const protocol = rawProtocol.split(',')[0].trim();
-    const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-
-    // Path like "/alexrivera" -> slug = "alexrivera"
-    const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
-    const slug = cleanPath.split('/')[0]?.toLowerCase();
-
-    let card = null;
-    if (slug) {
-      const cards = readServerCards();
-      card = cards.find(
-        c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
-      );
-    }
-
-    try {
-      let templateHtml = '';
-      if (process.env.NODE_ENV !== 'production' && viteServer) {
-        const indexFilePath = path.join(process.cwd(), 'index.html');
-        if (fs.existsSync(indexFilePath)) {
-          const rawHtml = fs.readFileSync(indexFilePath, 'utf-8');
-          templateHtml = await viteServer.transformIndexHtml(req.originalUrl, rawHtml);
+        let card = null;
+        if (slug) {
+          const cards = readServerCards();
+          card = cards.find(
+            c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
+          );
         }
-      } else {
-        const distIndexPath = path.join(process.cwd(), 'dist', 'index.html');
-        if (fs.existsSync(distIndexPath)) {
-          templateHtml = fs.readFileSync(distIndexPath, 'utf-8');
-        } else {
-          const rootIndexPath = path.join(process.cwd(), 'index.html');
-          if (fs.existsSync(rootIndexPath)) {
-            templateHtml = fs.readFileSync(rootIndexPath, 'utf-8');
+
+        try {
+          const indexFilePath = path.join(process.cwd(), 'index.html');
+          if (fs.existsSync(indexFilePath)) {
+            const rawHtml = fs.readFileSync(indexFilePath, 'utf-8');
+            const templateHtml = await viteServer.transformIndexHtml(req.originalUrl, rawHtml);
+            const injectedHtml = injectMetaTags(templateHtml, card, fullUrl, protocol, host);
+            return res.status(200).set({ 'Content-Type': 'text/html' }).send(injectedHtml);
           }
+        } catch (err) {
+          console.error('Error handling crawler meta tags in dev mode:', err);
+        }
+      }
+
+      next();
+    });
+
+    app.use(viteServer.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath, { index: false }));
+
+    app.get('*', (req, res) => {
+      const host = req.headers.host || `localhost:${PORT}`;
+      const rawProtocol = (req.headers['x-forwarded-proto'] as string) || 'https';
+      const protocol = rawProtocol.split(',')[0].trim();
+      const fullUrl = `${protocol}://${host}${req.originalUrl}`;
+
+      const cleanPath = req.path.replace(/^\/+|\/+$/g, '');
+      const slug = cleanPath.split('/')[0]?.toLowerCase();
+
+      let card = null;
+      if (slug) {
+        const cards = readServerCards();
+        card = cards.find(
+          c => (c.slug && c.slug.toLowerCase() === slug) || (c.id && c.id.toLowerCase() === slug)
+        );
+      }
+
+      const distIndexPath = path.join(distPath, 'index.html');
+      let templateHtml = '';
+      if (fs.existsSync(distIndexPath)) {
+        templateHtml = fs.readFileSync(distIndexPath, 'utf-8');
+      } else {
+        const rootIndexPath = path.join(process.cwd(), 'index.html');
+        if (fs.existsSync(rootIndexPath)) {
+          templateHtml = fs.readFileSync(rootIndexPath, 'utf-8');
         }
       }
 
@@ -288,25 +307,8 @@ async function startServer() {
         const injectedHtml = injectMetaTags(templateHtml, card, fullUrl, protocol, host);
         return res.status(200).set({ 'Content-Type': 'text/html' }).send(injectedHtml);
       }
-    } catch (err) {
-      console.error('Error serving HTML with dynamic preview meta tags:', err);
-    }
 
-    next();
-  });
-
-  // Vite middleware integration for development mode
-  if (process.env.NODE_ENV !== 'production') {
-    viteServer = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(viteServer.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      res.sendFile(distIndexPath);
     });
   }
 
