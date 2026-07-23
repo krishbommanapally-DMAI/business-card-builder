@@ -31,6 +31,46 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
 
+  // Dynamic document head & Open Graph update for client-side rendering
+  React.useEffect(() => {
+    if (!card) return;
+
+    const fullName = `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim();
+    const designation = card.profile?.designation || '';
+    const company = card.profile?.company || '';
+    const title = card.seo?.metaTitle || (designation ? `${fullName} - ${designation}` : fullName);
+    const description = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}`;
+    const imageUrl = card.avatar?.url || card.companyLogo?.url;
+
+    document.title = title;
+
+    const setMetaTag = (selector: string, attrName: string, attrVal: string, content: string) => {
+      let element = document.querySelector(selector);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attrName, attrVal);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    };
+
+    setMetaTag('meta[name="description"]', 'name', 'description', description);
+    setMetaTag('meta[property="og:title"]', 'property', 'og:title', title);
+    setMetaTag('meta[property="og:description"]', 'property', 'og:description', description);
+    setMetaTag('meta[property="og:type"]', 'property', 'og:type', 'profile');
+    setMetaTag('meta[property="og:url"]', 'property', 'og:url', window.location.href);
+
+    if (imageUrl) {
+      setMetaTag('meta[property="og:image"]', 'property', 'og:image', imageUrl);
+      setMetaTag('meta[property="og:image:secure_url"]', 'property', 'og:image:secure_url', imageUrl);
+      setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl);
+    }
+
+    setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
+    setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', title);
+    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', description);
+  }, [card]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white font-sans relative overflow-hidden">
@@ -147,46 +187,6 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
       </div>
     );
   }
-
-  // Dynamic document head & Open Graph update for client-side rendering
-  React.useEffect(() => {
-    if (!card) return;
-
-    const fullName = `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim();
-    const designation = card.profile?.designation || '';
-    const company = card.profile?.company || '';
-    const title = card.seo?.metaTitle || (designation ? `${fullName} - ${designation}` : fullName);
-    const description = card.seo?.metaDescription || card.profile?.tagline || card.profile?.about || `Digital Business Card for ${fullName}`;
-    const imageUrl = card.avatar?.url || card.companyLogo?.url;
-
-    document.title = title;
-
-    const setMetaTag = (selector: string, attrName: string, attrVal: string, content: string) => {
-      let element = document.querySelector(selector);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute(attrName, attrVal);
-        document.head.appendChild(element);
-      }
-      element.setAttribute('content', content);
-    };
-
-    setMetaTag('meta[name="description"]', 'name', 'description', description);
-    setMetaTag('meta[property="og:title"]', 'property', 'og:title', title);
-    setMetaTag('meta[property="og:description"]', 'property', 'og:description', description);
-    setMetaTag('meta[property="og:type"]', 'property', 'og:type', 'profile');
-    setMetaTag('meta[property="og:url"]', 'property', 'og:url', window.location.href);
-
-    if (imageUrl) {
-      setMetaTag('meta[property="og:image"]', 'property', 'og:image', imageUrl);
-      setMetaTag('meta[property="og:image:secure_url"]', 'property', 'og:image:secure_url', imageUrl);
-      setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl);
-    }
-
-    setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
-    setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', title);
-    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', description);
-  }, [card]);
 
   // Download VCard contact logic helper
   const handleDownloadVCard = () => {
