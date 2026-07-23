@@ -624,23 +624,29 @@ export default function App() {
   };
 
   // Gather appropriate user cards
-  const userCards = currentUser ? cards.filter(c => c.userId === currentUser.id) : [];
+  const userCards = currentUser ? cards.filter(c => c && c.userId === currentUser.id) : [];
   
   // Focus card for previewing/building
-  const activeBuilderCard = cards.find(c => c.id === activeCardId);
+  const activeBuilderCard = cards.find(c => c && c.id === activeCardId);
   const activePublicCard = cards.find(c => 
-    c.slug.toLowerCase() === activeCardSlug?.toLowerCase() || 
-    c.id.toLowerCase() === activeCardSlug?.toLowerCase()
+    (c && c.slug && activeCardSlug && c.slug.toLowerCase() === activeCardSlug.toLowerCase()) || 
+    (c && c.id && activeCardSlug && c.id.toLowerCase() === activeCardSlug.toLowerCase())
   );
 
   // Check if owner is verified
   let isActivePublicCardOwnerVerified = true;
   if (activePublicCard) {
-    const localUsersRaw = localStorage.getItem('cardnest_local_users');
-    const localUsers = localUsersRaw ? JSON.parse(localUsersRaw) : [];
-    const cardOwner = localUsers.find((u: any) => u.id === activePublicCard.userId);
-    if (cardOwner) {
-      isActivePublicCardOwnerVerified = cardOwner.isVerified !== false;
+    try {
+      const localUsersRaw = localStorage.getItem('cardnest_local_users');
+      const localUsers = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+      if (Array.isArray(localUsers)) {
+        const cardOwner = localUsers.find((u: any) => u && u.id === activePublicCard.userId);
+        if (cardOwner) {
+          isActivePublicCardOwnerVerified = cardOwner.isVerified !== false;
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing local users:', e);
     }
   }
 
