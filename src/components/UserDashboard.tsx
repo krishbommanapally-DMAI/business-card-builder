@@ -47,9 +47,27 @@ export default function UserDashboard({
     { id: 'n2', text: 'Premium subscription renewed successfully.', date: '3 days ago' },
   ];
 
-  // Copy card link helper
-  const handleCopyLink = (slug: string) => {
+  // Copy / Share card link helper
+  const handleCopyLink = async (slug: string) => {
+    const card = cards.find(c => c.slug === slug);
     const link = `${window.location.origin}/${slug}`;
+    const fullName = card ? `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim() : 'Digital Card';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${fullName} - Digital Business Card`,
+          text: `Check out ${fullName}'s digital business card:`,
+          url: link,
+        });
+        setCopiedSlug(slug);
+        setTimeout(() => setCopiedSlug(null), 2000);
+        return;
+      } catch (err) {
+        // Fallback to clipboard
+      }
+    }
+
     navigator.clipboard.writeText(link);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
