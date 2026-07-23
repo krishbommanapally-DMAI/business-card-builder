@@ -44,6 +44,8 @@ export default function App() {
 
   // Helper to parse deep link slug from URL path, query or hash
   const getSlugFromUrl = () => {
+    const reservedRoutes = ['dashboard', 'admin', 'builder', 'login', 'landing', 'signup', 'register'];
+
     // 1. Check query parameters first (e.g. ?card=krishna or ?slug=krishna)
     const params = new URLSearchParams(window.location.search);
     const querySlug = params.get('card') || params.get('slug') || params.get('u') || params.get('id');
@@ -52,16 +54,20 @@ export default function App() {
     // 2. Check hash (e.g. #/krishna or #krishna)
     const hash = window.location.hash;
     if (hash) {
-      const hashSlug = hash.replace(/^#\/?/, '');
+      const hashSlug = hash.replace(/^#\/?/, '').trim();
       if (hashSlug && !hashSlug.includes('=')) { // Ensure it's not a query-like hash
-        return hashSlug;
+        if (!reservedRoutes.includes(hashSlug.toLowerCase())) {
+          return hashSlug;
+        }
       }
     }
 
     // 3. Fallback to pathname (e.g. /krishna)
-    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    const path = window.location.pathname.replace(/^\/|\/$/g, '').trim();
     if (path && path !== 'index.html' && !path.includes('.') && !path.startsWith('api/')) {
-      return path;
+      if (!reservedRoutes.includes(path.toLowerCase())) {
+        return path;
+      }
     }
 
     return null;
@@ -656,8 +662,8 @@ export default function App() {
         </div>
       )}
       
-      {/* 1. Landing Webpage */}
-      {currentView === 'landing' && (
+      {/* 1. Landing Webpage (Fallback for missing user/card states) */}
+      {(currentView === 'landing' || (currentView === 'dashboard' && !currentUser) || (currentView === 'builder' && !activeBuilderCard)) && (
         <LandingPage 
           onRealLogin={onRealLogin} 
           onRealRegister={onRealRegister} 
