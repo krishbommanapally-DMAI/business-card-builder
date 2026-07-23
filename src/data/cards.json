@@ -1,0 +1,1890 @@
+[
+  {
+    "id": "card-murali",
+    "userId": "user-murali",
+    "slug": "murali",
+    "templateId": "modern_executive",
+    "status": "published",
+    "createdAt": "2026-01-15T10:00:00.000Z",
+    "updatedAt": "2026-07-23T12:00:00.000Z",
+    "profile": {
+      "firstName": "Murali",
+      "lastName": "Mohan",
+      "designation": "Computer Operator Pediatric Block",
+      "company": "MGM",
+      "tagline": "Healthcare IT & Operations Specialist.",
+      "about": "Managing pediatric block IT systems and patient administration at MGM.",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80"
+    },
+    "avatar": {
+      "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80",
+      "shape": "rounded-full",
+      "border": true
+    },
+    "companyLogo": {
+      "url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80"
+    },
+    "hero": {
+      "enabled": true,
+      "type": "gradient",
+      "gradientStart": "#2563eb",
+      "gradientEnd": "#1e40af"
+    },
+    "theme": {
+      "template": "modern_executive",
+      "primaryColor": "#2563eb",
+      "secondaryColor": "#0f172a",
+      "backgroundColor": "#ffffff",
+      "textColor": "#0f172a",
+      "fontFamily": "Inter",
+      "borderRadius": "1rem",
+      "cardStyle": "glass",
+      "customCss": ""
+    },
+    "contact": {
+      "email": "murali.mohan@mgm.org",
+      "phone": "+91 98765 43210",
+      "whatsapp": "+919876543210",
+      "website": "https://mgm.org",
+      "location": "MGM Hospital, Pediatric Block"
+    },
+    "socialLinks": [],
+    "customButtons": [],
+    "about": {
+      "enabled": true,
+      "title": "About Me",
+      "description": "Managing pediatric block IT systems and patient administration at MGM."
+    },
+    "services": [],
+    "products": [],
+    "gallery": [],
+    "videos": [],
+    "testimonials": [],
+    "certificates": [],
+    "skills": [],
+    "education": [],
+    "experience": [],
+    "downloads": [],
+    "businessHours": { "enabled": true, "hours": [] },
+    "qrCode": { "foregroundColor": "#0f172a", "backgroundColor": "#ffffff", "includeLogo": true },
+    "seo": {
+      "slug": "murali",
+      "metaTitle": "Murali Mohan - Computer Operator Pediatric Block | MGM",
+      "metaDescription": "Digital Business Card for Murali Mohan, Computer Operator Pediatric Block at MGM.",
+      "keywords": "Murali Mohan, MGM, Pediatric Block"
+    },
+    "analytics": { "views": 520, "visitors": 380, "clicks": 190, "qrScans": 85, "downloads": 42 }
+  },
+  {
+    "id": "79fde9eb-1108-4209-8a41-9ef7571aaf8b",
+    "userId": "44637c6f-251a-499d-a26f-2131396dc8db",
+    "slug": "elenarostova",
+    "templateId": "photographer",
+    "status": "published",
+    "createdAt": "2026-04-10T11:00:00+00:00",
+    "updatedAt": "2026-07-23T12:29:46.898Z",
+    "theme": {
+      "id": "theme-luxury",
+      "name": "Luxury Champagne",
+      "darkMode": false,
+      "cardStyle": "glassmorphism",
+      "iconStyle": "minimal",
+      "textColor": "#451A03",
+      "animations": "smooth",
+      "fontFamily": "Playfair Display",
+      "accentColor": "#F59E0B",
+      "buttonStyle": "filled",
+      "glassEffect": true,
+      "borderRadius": "full",
+      "primaryColor": "#78350F",
+      "secondaryColor": "#D97706",
+      "backgroundColor": "#FFFBEB"
+    },
+    "hero": {
+      "enabled": true,
+      "type": "image",
+      "height": "large",
+      "gradientStart": "#3B82F6",
+      "gradientEnd": "#1E3A8A",
+      "solidColor": "#0f172a",
+      "mediaUrl": "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80",
+      "loop": false,
+      "muted": true,
+      "autoplay": false,
+      "parallax": true,
+      "posterUrl": "",
+      "overlayBlur": 1,
+      "overlayColor": "#000000",
+      "textPosition": "bottom",
+      "overlayOpacity": 0.25
+    },
+    "avatar": {
+      "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&auto=format&fit=crop&q=80",
+      "borderWidth": 3,
+      "borderColor": "#F59E0B",
+      "shadow": "glow",
+      "size": "large",
+      "position": "center",
+      "zoom": 1,
+      "rotation": 0
+    },
+    "companyLogo": {
+      "enabled": false,
+      "url": "",
+      "position": "inline",
+      "size": "small",
+      "rounded": false,
+      "shadow": false
+    },
+    "profile": {
+      "prefix": "",
+      "firstName": "Elena",
+      "lastName": "Rostova",
+      "designation": "Fine Art Editorial Photographer",
+      "company": "Rostova Studio",
+      "tagline": "Capturing silent stories and timeless golden light.",
+      "about": "Elena Rostova travels between Paris and Milan capturing high-fashion editorials and quiet natural portraits. Her work has been featured twice in Vogue Italia and Harper's Bazaar."
+    },
+    "contact": {
+      "email": "studio@elenarostova.com",
+      "phone": "+33 6 1234 5678",
+      "website": "https://elenarostova.com",
+      "whatsapp": "+33612345678"
+    },
+    "socialLinks": [
+      {
+        "id": "sc-lux-1",
+        "url": "https://instagram.com",
+        "platform": "instagram"
+      },
+      {
+        "id": "sc-lux-2",
+        "url": "https://pinterest.com",
+        "platform": "pinterest"
+      },
+      {
+        "id": "sc-lux-3",
+        "url": "https://threads.net",
+        "platform": "threads"
+      }
+    ],
+    "customButtons": [
+      {
+        "id": "btn-lux-1",
+        "url": "#",
+        "icon": "BookOpen",
+        "text": "Request Milan Bridal Catalog",
+        "style": "filled",
+        "visible": true,
+        "textColor": "#FFFBEB",
+        "borderRadius": "full",
+        "hoverAnimation": "scale",
+        "backgroundColor": "#78350F"
+      }
+    ],
+    "about": {
+      "title": "AESTHETIC MANIFESTO",
+      "enabled": true,
+      "description": "Photography is the art of pausing a breath, a touch of light, an unspoken secret, and locking it in an eternal crystalline frame.",
+      "readMoreEnabled": false
+    },
+    "services": [
+      {
+        "id": "srv-lux-1",
+        "icon": "Sparkles",
+        "title": "Editorial & Haute Couture",
+        "description": "Complete high-fashion visual narratives including location sourcing, lighting design, and professional retouches."
+      },
+      {
+        "id": "srv-lux-2",
+        "icon": "Heart",
+        "title": "Destination Weddings",
+        "description": "Comprehensive wedding visual journaling across Europe and the Amalfi Coast."
+      }
+    ],
+    "products": [],
+    "gallery": [
+      {
+        "id": "gal-lux-1",
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "Milan Runway"
+      },
+      {
+        "id": "gal-lux-2",
+        "url": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=500&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "Sunset Silhouette"
+      },
+      {
+        "id": "gal-lux-3",
+        "url": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "Golden Hour"
+      }
+    ],
+    "videos": [],
+    "testimonials": [
+      {
+        "id": "tst-lux-1",
+        "rating": 5,
+        "company": "Vogue Milan",
+        "description": "Elena is a poet with a lens. She made us feel completely at ease, capturing moments that felt entirely candid yet looked like fine oil paintings.",
+        "customerName": "Sophia Loren"
+      }
+    ],
+    "certificates": [],
+    "skills": [
+      {
+        "id": "sk-lux-1",
+        "name": "Natural Lighting Composition",
+        "color": "#D97706",
+        "percentage": 100
+      },
+      {
+        "id": "sk-lux-2",
+        "name": "Medium Format Film Retouch",
+        "color": "#78350F",
+        "percentage": 95
+      }
+    ],
+    "education": [],
+    "experience": [],
+    "downloads": [],
+    "businessHours": {
+      "friday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "monday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "sunday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "tuesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "saturday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "thursday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "wednesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      }
+    },
+    "qrCode": {
+      "color": "#78350F",
+      "bgColor": "#FFFBEB",
+      "enabled": true,
+      "frameText": "PORTFOLIO",
+      "frameStyle": "accent",
+      "gradientColor": "#D97706",
+      "gradientEnabled": true
+    },
+    "seo": {
+      "slug": "elenarostova",
+      "keywords": "bridal photography, Milan editorial fashion, fine art film",
+      "metaTitle": "Elena Rostova Fine Art Photography | CardNest",
+      "metaDescription": "Editorial fashion and bridal destination photography by Paris-based Elena Rostova."
+    },
+    "analytics": {
+      "views": 1136,
+      "cities": [
+        {
+          "name": "San Francisco",
+          "value": 30
+        },
+        {
+          "name": "New York",
+          "value": 25
+        },
+        {
+          "name": "London",
+          "value": 18
+        },
+        {
+          "name": "Berlin",
+          "value": 12
+        },
+        {
+          "name": "Singapore",
+          "value": 10
+        },
+        {
+          "name": "Toronto",
+          "value": 5
+        }
+      ],
+      "clicks": 496,
+      "devices": [
+        {
+          "name": "Mobile",
+          "value": 72
+        },
+        {
+          "name": "Desktop",
+          "value": 24
+        },
+        {
+          "name": "Tablet",
+          "value": 4
+        }
+      ],
+      "qrScans": 248,
+      "browsers": [
+        {
+          "name": "Safari",
+          "value": 48
+        },
+        {
+          "name": "Chrome",
+          "value": 38
+        },
+        {
+          "name": "Firefox",
+          "value": 8
+        },
+        {
+          "name": "Edge",
+          "value": 6
+        }
+      ],
+      "timeline": [
+        {
+          "date": "Jul 14",
+          "scans": 24,
+          "views": 96
+        },
+        {
+          "date": "Jul 15",
+          "scans": 20,
+          "views": 120
+        },
+        {
+          "date": "Jul 16",
+          "scans": 32,
+          "views": 108
+        },
+        {
+          "date": "Jul 17",
+          "scans": 44,
+          "views": 152
+        },
+        {
+          "date": "Jul 18",
+          "scans": 34,
+          "views": 168
+        },
+        {
+          "date": "Jul 19",
+          "scans": 48,
+          "views": 196
+        },
+        {
+          "date": "Jul 20",
+          "scans": 60,
+          "views": 224
+        }
+      ],
+      "visitors": 784,
+      "countries": [
+        {
+          "name": "United States",
+          "value": 45
+        },
+        {
+          "name": "United Kingdom",
+          "value": 18
+        },
+        {
+          "name": "Germany",
+          "value": 12
+        },
+        {
+          "name": "Singapore",
+          "value": 10
+        },
+        {
+          "name": "Canada",
+          "value": 8
+        },
+        {
+          "name": "Others",
+          "value": 7
+        }
+      ],
+      "downloads": 144,
+      "operatingSystems": [
+        {
+          "name": "iOS",
+          "value": 52
+        },
+        {
+          "name": "Android",
+          "value": 21
+        },
+        {
+          "name": "macOS",
+          "value": 18
+        },
+        {
+          "name": "Windows",
+          "value": 9
+        }
+      ]
+    }
+  },
+  {
+    "id": "54f99067-10cc-4894-9d3e-353427addd14",
+    "userId": "4637c6f2-51ac-49d1-96f2-131396dc8db8",
+    "slug": "sarahchen",
+    "templateId": "developer",
+    "status": "published",
+    "createdAt": "2026-05-01T12:00:00+00:00",
+    "updatedAt": "2026-07-23T12:29:46.925Z",
+    "theme": {
+      "id": "theme-developer",
+      "name": "Cyberpunk Terminal",
+      "darkMode": true,
+      "cardStyle": "bordered",
+      "iconStyle": "square",
+      "textColor": "#E5E7EB",
+      "animations": "dynamic",
+      "fontFamily": "JetBrains Mono",
+      "accentColor": "#3B82F6",
+      "buttonStyle": "outline",
+      "glassEffect": false,
+      "borderRadius": "none",
+      "primaryColor": "#10B981",
+      "secondaryColor": "#14B8A6",
+      "backgroundColor": "#030712"
+    },
+    "hero": {
+      "enabled": true,
+      "type": "gradient",
+      "height": "small",
+      "gradientStart": "#022C22",
+      "gradientEnd": "#030712",
+      "solidColor": "",
+      "mediaUrl": "",
+      "loop": false,
+      "muted": true,
+      "autoplay": false,
+      "parallax": false,
+      "posterUrl": "",
+      "overlayBlur": 2,
+      "overlayColor": "#000000",
+      "textPosition": "top",
+      "overlayOpacity": 0.3
+    },
+    "avatar": {
+      "url": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&auto=format&fit=crop&q=80",
+      "borderWidth": 2,
+      "borderColor": "#10B981",
+      "shadow": "glow",
+      "size": "medium",
+      "position": "center",
+      "zoom": 1.1,
+      "rotation": 0
+    },
+    "companyLogo": {
+      "enabled": false,
+      "url": "",
+      "position": "inline",
+      "size": "small",
+      "rounded": false,
+      "shadow": false
+    },
+    "profile": {
+      "prefix": "",
+      "firstName": "Dr. Sarah",
+      "lastName": "Chen",
+      "designation": "Staff AI Engineer",
+      "company": "Synthetix Research",
+      "tagline": "Compiling neural models & cloud-native inference pipelines.",
+      "about": "Sarah Chen designs high-performance LLM deployment systems and custom AI agents. Previously research scientist at OpenAI and deep learning consultant, she lives in the shell and writes type-safe distributed infrastructure."
+    },
+    "contact": {
+      "email": "schen@synthetix.ai",
+      "phone": "+44 7911 123456",
+      "address": "Tech City, Shoreditch, London EC1V",
+      "website": "https://synthetix.ai",
+      "whatsapp": "+447911123456",
+      "googleMapsUrl": "https://maps.google.com"
+    },
+    "socialLinks": [
+      {
+        "id": "sc-dev-1",
+        "url": "https://github.com",
+        "platform": "github"
+      },
+      {
+        "id": "sc-dev-2",
+        "url": "https://linkedin.com",
+        "platform": "linkedin"
+      },
+      {
+        "id": "sc-dev-3",
+        "url": "https://telegram.org",
+        "platform": "telegram"
+      },
+      {
+        "id": "sc-dev-4",
+        "url": "https://twitter.com",
+        "platform": "twitter"
+      }
+    ],
+    "customButtons": [
+      {
+        "id": "btn-dev-1",
+        "url": "https://huggingface.co",
+        "icon": "Code2",
+        "text": "View HuggingFace Space",
+        "style": "filled",
+        "visible": true,
+        "textColor": "#030712",
+        "borderRadius": "none",
+        "hoverAnimation": "glow",
+        "backgroundColor": "#10B981"
+      }
+    ],
+    "about": {
+      "title": "[0x01] RESEARCH INTERESTS",
+      "enabled": true,
+      "description": "Distributed training, low-bit quantizations, serverless GPU routing, and Rust-based runtime safety patterns.",
+      "readMoreEnabled": false
+    },
+    "services": [
+      {
+        "id": "srv-dev-1",
+        "icon": "Cpu",
+        "title": "Custom Model Tuning",
+        "description": "Parameter-efficient fine-tuning (LoRA/QLoRA) optimized for specialized healthcare datasets."
+      },
+      {
+        "id": "srv-dev-2",
+        "icon": "Server",
+        "title": "Distributed Architecture",
+        "description": "Setup and design of auto-scaling Kubernetes workloads with GPU-direct storage access."
+      }
+    ],
+    "products": [
+      {
+        "id": "prd-dev-1",
+        "price": "$199",
+        "title": "LLM Latency Optimizer Script",
+        "imageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&auto=format&fit=crop&q=80",
+        "description": "A pre-configured engine that reduces TTFT (Time to First Token) by up to 40% on vLLM setups.",
+        "whatsappOrder": true
+      }
+    ],
+    "gallery": [],
+    "videos": [],
+    "testimonials": [
+      {
+        "id": "tst-dev-1",
+        "rating": 5,
+        "company": "NeuroScale Ltd",
+        "description": "Dr. Chen solved our model cold-start bottleneck in 3 days. Unbelievable precision and deep hardware knowledge.",
+        "customerName": "Aidan Kelly"
+      }
+    ],
+    "certificates": [
+      {
+        "id": "crt-dev-1",
+        "date": "2023-01-10",
+        "title": "Deep Learning Specialization",
+        "imageUrl": "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=300&auto=format&fit=crop&q=80",
+        "issuedBy": "DeepLearning.AI"
+      }
+    ],
+    "skills": [
+      {
+        "id": "sk-dev-1",
+        "name": "PyTorch / GPU Kernels",
+        "color": "#10B981",
+        "percentage": 98
+      },
+      {
+        "id": "sk-dev-2",
+        "name": "Rust & WebAssembly",
+        "color": "#14B8A6",
+        "percentage": 92
+      },
+      {
+        "id": "sk-dev-3",
+        "name": "Kubernetes Workloads",
+        "color": "#3B82F6",
+        "percentage": 88
+      }
+    ],
+    "education": [
+      {
+        "id": "edu-dev-1",
+        "degree": "Ph.D. in Computer Science (Artificial Intelligence)",
+        "school": "University of Cambridge",
+        "duration": "2108 - 2022",
+        "description": "Thesis: Neural representation alignment inside large transformers."
+      }
+    ],
+    "experience": [
+      {
+        "id": "exp-dev-1",
+        "role": "Staff AI Engineer",
+        "company": "Synthetix Research",
+        "duration": "2024 - Present",
+        "description": "Leading model infrastructure division and multi-million parameter inference clusters."
+      }
+    ],
+    "downloads": [
+      {
+        "id": "dl-dev-1",
+        "type": "portfolio",
+        "title": "Inference Benchmarks Whitepaper",
+        "fileUrl": "#",
+        "fileSize": "1.8 MB"
+      }
+    ],
+    "businessHours": {
+      "friday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "monday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "sunday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "tuesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "saturday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "thursday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "wednesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      }
+    },
+    "qrCode": {
+      "color": "#10B981",
+      "bgColor": "#030712",
+      "enabled": true,
+      "frameStyle": "none",
+      "gradientEnabled": false
+    },
+    "seo": {
+      "slug": "sarahchen",
+      "keywords": "machine learning, AI staff engineer, Rust AI developer",
+      "metaTitle": "Dr. Sarah Chen | Staff AI Engineer | CardNest",
+      "metaDescription": "AI research portfolio, custom models, and terminal contacts of Dr. Sarah Chen."
+    },
+    "analytics": {
+      "views": 2130,
+      "cities": [
+        {
+          "name": "San Francisco",
+          "value": 30
+        },
+        {
+          "name": "New York",
+          "value": 25
+        },
+        {
+          "name": "London",
+          "value": 18
+        },
+        {
+          "name": "Berlin",
+          "value": 12
+        },
+        {
+          "name": "Singapore",
+          "value": 10
+        },
+        {
+          "name": "Toronto",
+          "value": 5
+        }
+      ],
+      "clicks": 930,
+      "devices": [
+        {
+          "name": "Mobile",
+          "value": 72
+        },
+        {
+          "name": "Desktop",
+          "value": 24
+        },
+        {
+          "name": "Tablet",
+          "value": 4
+        }
+      ],
+      "qrScans": 465,
+      "browsers": [
+        {
+          "name": "Safari",
+          "value": 48
+        },
+        {
+          "name": "Chrome",
+          "value": 38
+        },
+        {
+          "name": "Firefox",
+          "value": 8
+        },
+        {
+          "name": "Edge",
+          "value": 6
+        }
+      ],
+      "timeline": [
+        {
+          "date": "Jul 14",
+          "scans": 45,
+          "views": 180
+        },
+        {
+          "date": "Jul 15",
+          "scans": 38,
+          "views": 225
+        },
+        {
+          "date": "Jul 16",
+          "scans": 60,
+          "views": 203
+        },
+        {
+          "date": "Jul 17",
+          "scans": 83,
+          "views": 285
+        },
+        {
+          "date": "Jul 18",
+          "scans": 63,
+          "views": 315
+        },
+        {
+          "date": "Jul 19",
+          "scans": 90,
+          "views": 368
+        },
+        {
+          "date": "Jul 20",
+          "scans": 113,
+          "views": 420
+        }
+      ],
+      "visitors": 1470,
+      "countries": [
+        {
+          "name": "United States",
+          "value": 45
+        },
+        {
+          "name": "United Kingdom",
+          "value": 18
+        },
+        {
+          "name": "Germany",
+          "value": 12
+        },
+        {
+          "name": "Singapore",
+          "value": 10
+        },
+        {
+          "name": "Canada",
+          "value": 8
+        },
+        {
+          "name": "Others",
+          "value": 7
+        }
+      ],
+      "downloads": 270,
+      "operatingSystems": [
+        {
+          "name": "iOS",
+          "value": 52
+        },
+        {
+          "name": "Android",
+          "value": 21
+        },
+        {
+          "name": "macOS",
+          "value": 18
+        },
+        {
+          "name": "Windows",
+          "value": 9
+        }
+      ]
+    }
+  },
+  {
+    "id": "09416319-b463-4df2-b0a8-aac173b409fb",
+    "userId": "598a212d-70ae-49bb-95df-0bd99107a3a9",
+    "slug": "krishna",
+    "templateId": "corporate",
+    "status": "draft",
+    "createdAt": "2026-07-21T16:49:25.781+00:00",
+    "updatedAt": "2026-07-23T12:29:46.942Z",
+    "theme": {
+      "id": "6a63275f-a404-48f1-85e5-aa2d607f045d",
+      "name": "Custom Slate",
+      "darkMode": false,
+      "cardStyle": "flat",
+      "iconStyle": "circle",
+      "textColor": "#0F172A",
+      "animations": "subtle",
+      "fontFamily": "Inter",
+      "accentColor": "#10B981",
+      "buttonStyle": "filled",
+      "glassEffect": false,
+      "borderRadius": "md",
+      "primaryColor": "#1E293B",
+      "secondaryColor": "#3B82F6",
+      "backgroundColor": "#FFFFFF"
+    },
+    "hero": {
+      "enabled": true,
+      "type": "gradient",
+      "height": "medium",
+      "gradientStart": "#1E293B",
+      "gradientEnd": "#475569",
+      "solidColor": "",
+      "mediaUrl": "",
+      "loop": false,
+      "muted": true,
+      "autoplay": false,
+      "parallax": false,
+      "overlayBlur": 0,
+      "overlayColor": "#000000",
+      "textPosition": "center",
+      "overlayOpacity": 0.1
+    },
+    "avatar": {
+      "url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+      "borderWidth": 3,
+      "borderColor": "#FFFFFF",
+      "shadow": "md",
+      "size": "medium",
+      "position": "center",
+      "zoom": 1,
+      "rotation": 0
+    },
+    "companyLogo": {
+      "enabled": false,
+      "url": "",
+      "position": "inline",
+      "size": "small",
+      "rounded": true,
+      "shadow": true
+    },
+    "profile": {
+      "prefix": "",
+      "firstName": "Krishna",
+      "lastName": "",
+      "designation": "Professional Specialist",
+      "company": "Innovate Solutions",
+      "tagline": "Passionate about crafting elegant web interfaces.",
+      "about": "I am a highly motivated specialist delivering excellence across collaborative technical pipelines."
+    },
+    "contact": {
+      "email": "newuser@innovate.com",
+      "phone": "+1 (555) 123-4567",
+      "website": "https://innovate.com",
+      "whatsapp": "+15551234567"
+    },
+    "socialLinks": [
+      {
+        "id": "sl-1",
+        "url": "https://linkedin.com",
+        "platform": "linkedin"
+      },
+      {
+        "id": "sl-2",
+        "url": "https://github.com",
+        "platform": "github"
+      }
+    ],
+    "customButtons": [],
+    "about": {
+      "title": "My Background",
+      "enabled": false,
+      "description": "Providing client-focused consulting and development support.",
+      "readMoreEnabled": false
+    },
+    "services": [],
+    "products": [],
+    "gallery": [],
+    "videos": [],
+    "testimonials": [],
+    "certificates": [],
+    "skills": [],
+    "education": [],
+    "experience": [],
+    "downloads": [],
+    "businessHours": {
+      "friday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "monday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "sunday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "tuesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "saturday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "thursday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "wednesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      }
+    },
+    "qrCode": {
+      "color": "#0F172A",
+      "bgColor": "#FFFFFF",
+      "enabled": true,
+      "frameStyle": "none",
+      "gradientEnabled": false
+    },
+    "seo": {
+      "slug": "user_swgw0",
+      "keywords": "business card, digital business card, contactless profile",
+      "metaTitle": "My Digital Business Card",
+      "metaDescription": "Interactive, modern digital business card crafted on CardNest."
+    },
+    "analytics": {
+      "views": 0,
+      "cities": [],
+      "clicks": 0,
+      "devices": [],
+      "qrScans": 0,
+      "browsers": [],
+      "timeline": [],
+      "visitors": 0,
+      "countries": [],
+      "downloads": 0,
+      "operatingSystems": []
+    }
+  },
+  {
+    "id": "ca69ae0e-6f8a-42f0-927e-5ceaef953989",
+    "userId": "b083d8b2-3a1d-4371-9223-180d80243be5",
+    "slug": "user_nea5x",
+    "templateId": "corporate",
+    "status": "draft",
+    "createdAt": "2026-07-22T05:00:46.046+00:00",
+    "updatedAt": "2026-07-23T12:29:46.966Z",
+    "theme": {
+      "id": "045885e1-2a88-4eaf-bf3a-759a3a591957",
+      "name": "Custom Slate",
+      "darkMode": false,
+      "cardStyle": "flat",
+      "iconStyle": "circle",
+      "textColor": "#0F172A",
+      "animations": "subtle",
+      "fontFamily": "Inter",
+      "accentColor": "#10B981",
+      "buttonStyle": "filled",
+      "glassEffect": false,
+      "borderRadius": "md",
+      "primaryColor": "#1E293B",
+      "secondaryColor": "#3B82F6",
+      "backgroundColor": "#FFFFFF"
+    },
+    "hero": {
+      "enabled": true,
+      "type": "gradient",
+      "height": "medium",
+      "gradientStart": "#1E293B",
+      "gradientEnd": "#475569",
+      "solidColor": "",
+      "mediaUrl": "",
+      "loop": false,
+      "muted": true,
+      "autoplay": false,
+      "parallax": false,
+      "overlayBlur": 0,
+      "overlayColor": "#000000",
+      "textPosition": "center",
+      "overlayOpacity": 0.1
+    },
+    "avatar": {
+      "url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+      "borderWidth": 3,
+      "borderColor": "#FFFFFF",
+      "shadow": "md",
+      "size": "medium",
+      "position": "center",
+      "zoom": 1,
+      "rotation": 0
+    },
+    "companyLogo": {
+      "enabled": false,
+      "url": "",
+      "position": "inline",
+      "size": "small",
+      "rounded": true,
+      "shadow": true
+    },
+    "profile": {
+      "prefix": "",
+      "firstName": "New",
+      "lastName": "User",
+      "designation": "Professional Specialist",
+      "company": "Innovate Solutions",
+      "tagline": "Passionate about crafting elegant web interfaces.",
+      "about": "I am a highly motivated specialist delivering excellence across collaborative technical pipelines."
+    },
+    "contact": {
+      "email": "newuser@innovate.com",
+      "phone": "+1 (555) 123-4567",
+      "website": "https://innovate.com",
+      "whatsapp": "+15551234567"
+    },
+    "socialLinks": [
+      {
+        "id": "sl-1",
+        "url": "https://linkedin.com",
+        "platform": "linkedin"
+      },
+      {
+        "id": "sl-2",
+        "url": "https://github.com",
+        "platform": "github"
+      }
+    ],
+    "customButtons": [],
+    "about": {
+      "title": "My Background",
+      "enabled": false,
+      "description": "Providing client-focused consulting and development support.",
+      "readMoreEnabled": false
+    },
+    "services": [],
+    "products": [],
+    "gallery": [],
+    "videos": [],
+    "testimonials": [],
+    "certificates": [],
+    "skills": [],
+    "education": [],
+    "experience": [],
+    "downloads": [],
+    "businessHours": {
+      "friday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "monday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "sunday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "tuesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "saturday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "thursday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "wednesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      }
+    },
+    "qrCode": {
+      "color": "#0F172A",
+      "bgColor": "#FFFFFF",
+      "enabled": true,
+      "frameStyle": "none",
+      "gradientEnabled": false
+    },
+    "seo": {
+      "slug": "user_nea5x",
+      "keywords": "business card, digital business card, contactless profile",
+      "metaTitle": "My Digital Business Card",
+      "metaDescription": "Interactive, modern digital business card crafted on CardNest."
+    },
+    "analytics": {
+      "views": 0,
+      "cities": [],
+      "clicks": 0,
+      "devices": [],
+      "qrScans": 0,
+      "browsers": [],
+      "timeline": [],
+      "visitors": 0,
+      "countries": [],
+      "downloads": 0,
+      "operatingSystems": []
+    }
+  },
+  {
+    "id": "49a3cf75-3673-460a-9d86-ea9eff839f1c",
+    "userId": "f3c9707d-493d-40e6-9037-ee8527d9832a",
+    "slug": "murali",
+    "templateId": "corporate",
+    "status": "draft",
+    "createdAt": "2026-07-22T06:14:03.528+00:00",
+    "updatedAt": "2026-07-23T12:29:46.973Z",
+    "theme": {
+      "id": "3746f8dc-0436-4cba-81a8-e80bcca0771e",
+      "name": "Custom Slate",
+      "darkMode": false,
+      "cardStyle": "flat",
+      "iconStyle": "circle",
+      "textColor": "#0F172A",
+      "animations": "subtle",
+      "fontFamily": "Inter",
+      "accentColor": "#10B981",
+      "buttonStyle": "filled",
+      "glassEffect": false,
+      "borderRadius": "md",
+      "primaryColor": "#4b83dd",
+      "secondaryColor": "#df56e1",
+      "backgroundColor": "#FFFFFF"
+    },
+    "hero": {
+      "enabled": true,
+      "type": "image",
+      "height": "medium",
+      "gradientStart": "#6f9be2",
+      "gradientEnd": "#475569",
+      "solidColor": "",
+      "mediaUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
+      "loop": false,
+      "muted": true,
+      "autoplay": false,
+      "parallax": false,
+      "overlayBlur": 0,
+      "overlayColor": "#000000",
+      "textPosition": "center",
+      "overlayOpacity": 0.1
+    },
+    "avatar": {
+      "url": "https://ctjzkdybdchvowrsghfv.supabase.co/storage/v1/object/public/Avatars/murali.jpeg",
+      "borderWidth": 3,
+      "borderColor": "#FFFFFF",
+      "shadow": "glow",
+      "size": "medium",
+      "position": "center",
+      "zoom": 1,
+      "rotation": 0
+    },
+    "companyLogo": {
+      "enabled": false,
+      "url": "",
+      "position": "inline",
+      "size": "small",
+      "rounded": true,
+      "shadow": true
+    },
+    "profile": {
+      "prefix": "",
+      "firstName": "Murali",
+      "lastName": "Mohan",
+      "designation": "Computer Operator Pediatric Block",
+      "company": "MGM",
+      "tagline": "Work is worship",
+      "about": "I am a highly motivated specialist delivering excellence across collaborative technical pipelines."
+    },
+    "contact": {
+      "email": "murali@gmail.com",
+      "phone": "917396813998",
+      "address": "Warangal, Telangana",
+      "website": "https://vcard-cyan.vercel.app",
+      "whatsapp": "917396813998"
+    },
+    "socialLinks": [
+      {
+        "id": "sl-1",
+        "url": "https://linkedin.com",
+        "platform": "linkedin"
+      },
+      {
+        "id": "sl-2",
+        "url": "https://github.com",
+        "platform": "github"
+      }
+    ],
+    "customButtons": [],
+    "about": {
+      "title": "My Background",
+      "enabled": false,
+      "description": "Providing client-focused consulting and development support.",
+      "readMoreEnabled": false
+    },
+    "services": [
+      {
+        "id": "srv-1784700981650",
+        "icon": "Sparkles",
+        "title": "Consultation Service",
+        "description": "Describe your professional consulting deliverables."
+      },
+      {
+        "id": "srv-1784700994360",
+        "icon": "Sparkles",
+        "title": "Marketing Service",
+        "description": "Describe your professional consulting deliverables."
+      }
+    ],
+    "products": [
+      {
+        "id": "prd-1784701012383",
+        "price": "$29",
+        "title": "Digital vcard",
+        "description": "Downloadable design templates optimized for SaaS teams.",
+        "whatsappOrder": true
+      },
+      {
+        "id": "prd-1784701039465",
+        "price": "$29",
+        "title": "Digital software pack",
+        "description": "Downloadable design templates optimized for SaaS teams.",
+        "whatsappOrder": true
+      }
+    ],
+    "gallery": [
+      {
+        "id": "gal-1784706439753",
+        "url": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=600&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "New Showcase Photo"
+      },
+      {
+        "id": "gal-1784706441952",
+        "url": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=600&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "New Showcase Photo"
+      }
+    ],
+    "videos": [],
+    "testimonials": [],
+    "certificates": [],
+    "skills": [],
+    "education": [],
+    "experience": [],
+    "downloads": [],
+    "businessHours": {
+      "friday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "monday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "sunday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "tuesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "saturday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "thursday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "wednesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      }
+    },
+    "qrCode": {
+      "color": "#0F172A",
+      "bgColor": "#FFFFFF",
+      "enabled": true,
+      "frameStyle": "none",
+      "includeLogo": true,
+      "gradientEnabled": false
+    },
+    "seo": {
+      "slug": "user_pn5mk",
+      "keywords": "business card, digital business card, contactless profile",
+      "metaTitle": "My Digital Business Card",
+      "metaDescription": "Interactive, modern digital business card crafted on CardNest."
+    },
+    "analytics": {
+      "views": 0,
+      "cities": [],
+      "clicks": 0,
+      "devices": [],
+      "qrScans": 0,
+      "browsers": [],
+      "timeline": [],
+      "visitors": 0,
+      "countries": [],
+      "downloads": 0,
+      "operatingSystems": []
+    }
+  },
+  {
+    "id": "7d527a21-c167-4935-ac8f-9217d0fd0631",
+    "userId": "44637c6f-251a-499d-a26f-2131396dc8db",
+    "slug": "alexrivera",
+    "templateId": "corporate",
+    "status": "published",
+    "createdAt": "2026-03-12T10:00:00+00:00",
+    "updatedAt": "2026-07-23T12:29:47.017Z",
+    "profile": {
+      "prefix": "Mr.",
+      "firstName": "Alex",
+      "lastName": "Rivera",
+      "designation": "VP of Design & Product",
+      "company": "DesignCo Global",
+      "tagline": "Crafting the future of human-centered enterprise applications",
+      "about": "Alex Rivera is a veteran design architect with over 15 years of industry experience. Leading cross-functional teams in creating intuitive digital systems, Alex has partnered with fortune 500 companies to pioneer modern UI standards."
+    },
+    "avatar": {
+      "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+      "borderWidth": 4,
+      "borderColor": "#FFFFFF",
+      "shadow": "lg",
+      "size": "medium",
+      "position": "center",
+      "zoom": 1,
+      "rotation": 0
+    },
+    "companyLogo": {
+      "enabled": true,
+      "url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80",
+      "position": "inline",
+      "size": "medium",
+      "rounded": true,
+      "shadow": true
+    },
+    "hero": {
+      "enabled": true,
+      "type": "gradient",
+      "height": "medium",
+      "gradientStart": "#1E3A8A",
+      "gradientEnd": "#0F172A",
+      "solidColor": "",
+      "mediaUrl": "",
+      "loop": false,
+      "muted": true,
+      "autoplay": false,
+      "parallax": true,
+      "posterUrl": "",
+      "overlayBlur": 0,
+      "overlayColor": "#0F172A",
+      "textPosition": "center",
+      "overlayOpacity": 0.1
+    },
+    "theme": {
+      "id": "theme-corporate",
+      "name": "Corporate Navy",
+      "darkMode": false,
+      "cardStyle": "elevated",
+      "iconStyle": "circle",
+      "textColor": "#1E293B",
+      "animations": "smooth",
+      "fontFamily": "Outfit",
+      "accentColor": "#10B981",
+      "buttonStyle": "filled",
+      "glassEffect": true,
+      "borderRadius": "lg",
+      "primaryColor": "#0F172A",
+      "secondaryColor": "#3B82F6",
+      "backgroundColor": "#F8FAFC"
+    },
+    "contact": {
+      "sms": "+15550192831",
+      "email": "alex.rivera@designco.io",
+      "phone": "+1 (555) 019-2831",
+      "address": "500 Howard St, San Francisco, CA 94105",
+      "website": "https://designco.io",
+      "whatsapp": "+15550192831",
+      "googleMapsUrl": "https://maps.google.com"
+    },
+    "socialLinks": [
+      {
+        "id": "sc-1",
+        "url": "https://linkedin.com",
+        "platform": "linkedin"
+      },
+      {
+        "id": "sc-2",
+        "url": "https://twitter.com",
+        "platform": "twitter"
+      },
+      {
+        "id": "sc-3",
+        "url": "https://instagram.com",
+        "platform": "instagram"
+      },
+      {
+        "id": "sc-4",
+        "url": "https://github.com",
+        "platform": "github"
+      }
+    ],
+    "customButtons": [
+      {
+        "id": "btn-1",
+        "url": "https://calendly.com",
+        "icon": "Calendar",
+        "text": "Schedule Q3 Strategy Consultation",
+        "style": "filled",
+        "visible": true,
+        "textColor": "#FFFFFF",
+        "borderRadius": "lg",
+        "hoverAnimation": "scale",
+        "backgroundColor": "#2563EB"
+      }
+    ],
+    "about": {
+      "title": "Our Executive Vision",
+      "enabled": true,
+      "description": "At DesignCo Global, we believe design is not just what it looks like; it is how it works. We operate at the intersection of business strategy, breakthrough engineering, and elegant digital aesthetics.",
+      "readMoreText": "Read full executive bio & publications",
+      "readMoreEnabled": true
+    },
+    "services": [
+      {
+        "id": "srv-1",
+        "icon": "LayoutGrid",
+        "title": "Enterprise Product Consulting",
+        "description": "Comprehensive audit and design blueprinting to increase product engagement and reduce user friction."
+      },
+      {
+        "id": "srv-2",
+        "icon": "Component",
+        "title": "Design System Architecture",
+        "description": "Developing unified, production-ready design tokens and UI kits built on React and TailwindCSS."
+      }
+    ],
+    "products": [
+      {
+        "id": "prd-1",
+        "price": "$1,250",
+        "title": "Executive UX Masterclass",
+        "imageUrl": "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=300&auto=format&fit=crop&q=80",
+        "description": "1-on-1 virtual product strategy training and hands-on portfolio teardown.",
+        "whatsappOrder": true
+      },
+      {
+        "id": "prd-2",
+        "price": "$49",
+        "title": "Design Audit E-Book",
+        "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&auto=format&fit=crop&q=80",
+        "description": "The ultimate guide to running internal visual reviews for scaling engineering startups.",
+        "whatsappOrder": false
+      }
+    ],
+    "gallery": [
+      {
+        "id": "gal-1",
+        "url": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "Main Headquarters"
+      },
+      {
+        "id": "gal-2",
+        "url": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=500&auto=format&fit=crop&q=80",
+        "type": "image",
+        "title": "Collaboration Zone"
+      }
+    ],
+    "videos": [
+      {
+        "id": "vid-1",
+        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "type": "youtube",
+        "title": "DesignCo Keynote Video"
+      }
+    ],
+    "testimonials": [
+      {
+        "id": "tst-1",
+        "rating": 5,
+        "company": "CloudFlow Tech",
+        "description": "Working with Alex transformed our SaaS interface completely. Our conversion rate rose by 34% within the first month of shipping the redesigned components.",
+        "customerName": "Marcus Vance"
+      }
+    ],
+    "certificates": [
+      {
+        "id": "crt-1",
+        "date": "2025-06-15",
+        "title": "Certified Product Owner",
+        "imageUrl": "https://images.unsplash.com/photo-1589330694653-ded6df03f754?w=300&auto=format&fit=crop&q=80",
+        "issuedBy": "Scrum Alliance"
+      }
+    ],
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "Product Strategy & Vision",
+        "color": "#3B82F6",
+        "percentage": 95
+      },
+      {
+        "id": "sk-2",
+        "name": "Design Systems Architecture",
+        "color": "#10B981",
+        "percentage": 90
+      },
+      {
+        "id": "sk-3",
+        "name": "Interactive UI Prototyping",
+        "color": "#F59E0B",
+        "percentage": 85
+      }
+    ],
+    "education": [
+      {
+        "id": "edu-1",
+        "degree": "M.S. in Human-Computer Interaction",
+        "school": "Georgia Institute of Technology",
+        "duration": "2012 - 2014",
+        "description": "Focused research on scalable web layouts and responsive UI patterns."
+      }
+    ],
+    "experience": [
+      {
+        "id": "exp-1",
+        "role": "VP of Product Experience",
+        "company": "DesignCo Global",
+        "duration": "2021 - Present",
+        "description": "Supervising 25 designers, UI engineers, and technical researchers creating global SaaS tools."
+      }
+    ],
+    "downloads": [
+      {
+        "id": "dl-1",
+        "type": "brochure",
+        "title": "DesignCo Q3 Enterprise Brochure",
+        "fileUrl": "#",
+        "fileSize": "4.2 MB"
+      }
+    ],
+    "businessHours": {
+      "friday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "monday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "sunday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "tuesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "saturday": {
+        "enabled": false,
+        "openTime": "10:00",
+        "closeTime": "15:00",
+        "is24Hours": false
+      },
+      "thursday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      },
+      "wednesday": {
+        "enabled": true,
+        "openTime": "09:00",
+        "closeTime": "17:00",
+        "is24Hours": false
+      }
+    },
+    "qrCode": {
+      "color": "#0F172A",
+      "bgColor": "#FFFFFF",
+      "enabled": true,
+      "frameText": "SCAN MY CARD",
+      "frameStyle": "sleek",
+      "gradientColor": "#2563EB",
+      "gradientEnabled": true
+    },
+    "seo": {
+      "slug": "alexrivera",
+      "keywords": "product design, ui/ux, executive card, designco",
+      "metaTitle": "Alex Rivera - VP of Design | CardNest",
+      "metaDescription": "Digital interactive business card of Alex Rivera, leading UI/UX & Product Design at DesignCo."
+    },
+    "analytics": {
+      "views": 1420,
+      "cities": [
+        {
+          "name": "San Francisco",
+          "value": 30
+        },
+        {
+          "name": "New York",
+          "value": 25
+        },
+        {
+          "name": "London",
+          "value": 18
+        },
+        {
+          "name": "Berlin",
+          "value": 12
+        },
+        {
+          "name": "Singapore",
+          "value": 10
+        },
+        {
+          "name": "Toronto",
+          "value": 5
+        }
+      ],
+      "clicks": 620,
+      "devices": [
+        {
+          "name": "Mobile",
+          "value": 72
+        },
+        {
+          "name": "Desktop",
+          "value": 24
+        },
+        {
+          "name": "Tablet",
+          "value": 4
+        }
+      ],
+      "qrScans": 310,
+      "browsers": [
+        {
+          "name": "Safari",
+          "value": 48
+        },
+        {
+          "name": "Chrome",
+          "value": 38
+        },
+        {
+          "name": "Firefox",
+          "value": 8
+        },
+        {
+          "name": "Edge",
+          "value": 6
+        }
+      ],
+      "timeline": [
+        {
+          "date": "Jul 14",
+          "scans": 30,
+          "views": 120
+        },
+        {
+          "date": "Jul 15",
+          "scans": 25,
+          "views": 150
+        },
+        {
+          "date": "Jul 16",
+          "scans": 40,
+          "views": 135
+        },
+        {
+          "date": "Jul 17",
+          "scans": 55,
+          "views": 190
+        },
+        {
+          "date": "Jul 18",
+          "scans": 42,
+          "views": 210
+        },
+        {
+          "date": "Jul 19",
+          "scans": 60,
+          "views": 245
+        },
+        {
+          "date": "Jul 20",
+          "scans": 75,
+          "views": 280
+        }
+      ],
+      "visitors": 980,
+      "countries": [
+        {
+          "name": "United States",
+          "value": 45
+        },
+        {
+          "name": "United Kingdom",
+          "value": 18
+        },
+        {
+          "name": "Germany",
+          "value": 12
+        },
+        {
+          "name": "Singapore",
+          "value": 10
+        },
+        {
+          "name": "Canada",
+          "value": 8
+        },
+        {
+          "name": "Others",
+          "value": 7
+        }
+      ],
+      "downloads": 180,
+      "operatingSystems": [
+        {
+          "name": "iOS",
+          "value": 52
+        },
+        {
+          "name": "Android",
+          "value": 21
+        },
+        {
+          "name": "macOS",
+          "value": 18
+        },
+        {
+          "name": "Windows",
+          "value": 9
+        }
+      ]
+    }
+  }
+]
