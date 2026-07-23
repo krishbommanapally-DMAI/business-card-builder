@@ -190,36 +190,51 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
 
   // Download VCard contact logic helper
   const handleDownloadVCard = () => {
+    if (!card) return;
+    const lastName = card.profile?.lastName || '';
+    const firstName = card.profile?.firstName || '';
+    const company = card.profile?.company || '';
+    const designation = card.profile?.designation || '';
+    const phone = card.contact?.phone || '';
+    const email = card.contact?.email || '';
+    const website = card.contact?.website || '';
+    const address = card.contact?.address || card.contact?.googleMapsUrl || '';
+
     const vcardContent = `BEGIN:VCARD
 VERSION:3.0
-N:${card.profile.lastName};${card.profile.firstName};;;
-FN:${card.profile.firstName} ${card.profile.lastName}
-ORG:${card.profile.company}
-TITLE:${card.profile.designation}
-TEL;TYPE=CELL:${card.contact.phone || ''}
-EMAIL;TYPE=PREF,INTERNET:${card.contact.email || ''}
-URL:${card.contact.website || ''}
-ADR;TYPE=WORK:;;${card.contact.address || ''};;;;
+N:${lastName};${firstName};;;
+FN:${firstName} ${lastName}
+ORG:${company}
+TITLE:${designation}
+TEL;TYPE=CELL:${phone}
+EMAIL;TYPE=PREF,INTERNET:${email}
+URL:${website}
+ADR;TYPE=WORK:;;${address};;;;
 END:VCARD`;
 
     const blob = new Blob([vcardContent], { type: 'text/vcard;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `${card.slug}_contact.vcf`);
+    link.setAttribute('download', `${card.slug || 'card'}_contact.vcf`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    card.analytics.downloads += 1;
+    if (card.analytics) {
+      card.analytics.downloads = (card.analytics.downloads || 0) + 1;
+    }
   };
 
   // WhatsApp purchase flow builder
   const handleWhatsAppOrder = (productTitle: string, price: string) => {
-    const phone = card.contact.whatsapp || card.contact.phone || '';
+    if (!card) return;
+    const phone = card.contact?.whatsapp || card.contact?.phone || '';
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const msg = encodeURIComponent(`Hi ${card.profile.firstName}, I saw your products on your CardNest digital card and would like to order "${productTitle}" for ${price}. Let me know if it is available!`);
+    const msg = encodeURIComponent(`Hi ${card.profile?.firstName || ''}, I saw your products on your CardNest digital card and would like to order "${productTitle}" for ${price}. Let me know if it is available!`);
     window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
-    card.analytics.clicks += 1;
+    if (card.analytics) {
+      card.analytics.clicks = (card.analytics.clicks || 0) + 1;
+    }
   };
 
   const handleShareLink = async () => {
