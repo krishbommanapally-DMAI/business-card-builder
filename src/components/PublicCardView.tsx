@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Phone, Mail, Globe, MapPin, Calendar, Smartphone, Download, 
   MessageSquare, Star, QrCode, Check, Award, Clock, ArrowLeft,
-  ChevronRight, Sparkles, Send, ShieldAlert, X, AlertCircle, ShoppingBag
+  ChevronRight, Sparkles, Send, ShieldAlert, X, AlertCircle, ShoppingBag,
+  Share2, Copy
 } from 'lucide-react';
 import { DigitalCard } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -30,6 +31,8 @@ export default function PublicCardView({ card, isVerified, isLoading, onBackToDa
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [showQrCode, setShowQrCode] = useState(false);
 
   // Dynamic document head & Open Graph update for client-side rendering
   React.useEffect(() => {
@@ -237,12 +240,29 @@ END:VCARD`;
     }
   };
 
-  const handleShareLink = async () => {
+  const handleShareLink = () => {
     if (!card) return;
+    setShareModalOpen(true);
+    if (card.analytics) {
+      card.analytics.clicks = (card.analytics.clicks || 0) + 1;
+    }
+  };
 
+  const handleCopyShareLink = () => {
+    if (!card) return;
+    const shareUrl = window.location.href;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedUrl(true);
+    setTimeout(() => setCopiedUrl(false), 2000);
+  };
+
+  const handleNativeDeviceShare = async () => {
+    if (!card) return;
     const fullName = `${card.profile?.firstName || ''} ${card.profile?.lastName || ''}`.trim();
+    const designation = card.profile?.designation || '';
+    const company = card.profile?.company || '';
     const shareTitle = `${fullName} - Digital Business Card`;
-    const shareText = `Digital Business Card for ${fullName}. Save contact info & view profile:`;
+    const shareText = `Digital Business Card for ${fullName}${designation ? ` (${designation})` : ''}. View profile & save contact details:`;
     const shareUrl = window.location.href;
 
     if (navigator.share) {
@@ -252,20 +272,12 @@ END:VCARD`;
           text: shareText,
           url: shareUrl,
         });
-        setCopiedUrl(true);
-        setTimeout(() => setCopiedUrl(false), 2000);
-        card.analytics.clicks += 1;
-        return;
       } catch (err) {
-        // User cancelled native share sheet or share failed
+        // User cancelled share
       }
+    } else {
+      handleCopyShareLink();
     }
-
-    // Fallback to clipboard
-    navigator.clipboard.writeText(shareUrl);
-    setCopiedUrl(true);
-    setTimeout(() => setCopiedUrl(false), 2000);
-    card.analytics.clicks += 1;
   };
 
   // Book appointment handler
@@ -670,6 +682,143 @@ END:VCARD`;
                   Submit Calendar Request
                 </button>
               </form>
+            )}
+          </motion.div>
+        </div>
+      )}
+
+      {/* 2. SHARE CARD MODAL (Matches Wireframe Image 2 layout with profile photo, name, designation, company & clean share link) */}
+      {shareModalOpen && card && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative text-white"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <Share2 size={16} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">Share Digital Card</h3>
+                  <p className="text-[10px] text-slate-400">Share profile link or contact card</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShareModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Profile Card Unit (Matches Image 2 Wireframe: Circle Avatar on Left, Name/Role/Company on Right) */}
+            {(() => {
+              const firstName = card.profile?.firstName || '';
+              const lastName = card.profile?.lastName || '';
+              const fullName = `${firstName} ${lastName}`.trim() || 'Digital Business Card';
+              const designation = card.profile?.designation || '';
+              const company = card.profile?.company || '';
+              const avatarUrl = card.avatar?.url || card.profile?.avatarUrl || card.companyLogo?.url;
+
+              return (
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 shadow-xl mb-5 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                  
+                  {/* Left: Circular Profile Picture */}
+                  <div className="w-16 h-16 rounded-full border-2 border-indigo-500/80 overflow-hidden shrink-0 bg-slate-900 flex items-center justify-center shadow-md relative z-10">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl font-bold text-indigo-400">{firstName[0] || 'D'}{lastName[0] || 'C'}</span>
+                    )}
+                  </div>
+
+                  {/* Right: Stacked Info (Name, Designation Role, Company Name) */}
+                  <div className="flex flex-col min-w-0 relative z-10">
+                    <h4 className="font-extrabold text-sm text-white tracking-tight truncate">{fullName}</h4>
+                    {designation && <p className="text-xs font-semibold text-indigo-300 truncate mt-0.5">{designation}</p>}
+                    {company && <p className="text-[11px] font-medium text-slate-400 truncate mt-0.5">{company}</p>}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Clean Share Link Box */}
+            <div className="mb-5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                Share Link
+              </label>
+              <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={window.location.href} 
+                  className="flex-1 bg-transparent text-xs text-slate-300 px-2 focus:outline-none font-mono truncate"
+                />
+                <button 
+                  onClick={handleCopyShareLink}
+                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-md"
+                >
+                  {copiedUrl ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />} 
+                  {copiedUrl ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Share Options */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <button
+                onClick={handleNativeDeviceShare}
+                className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Share2 size={14} className="text-indigo-400" /> Share via App
+              </button>
+
+              <button
+                onClick={() => {
+                  const phone = card.contact?.whatsapp || card.contact?.phone || '';
+                  const cleanPhone = phone.replace(/[^0-9]/g, '');
+                  const text = encodeURIComponent(`Hi! Check out my digital business card:\n${window.location.href}`);
+                  window.open(cleanPhone ? `https://wa.me/${cleanPhone}?text=${text}` : `https://wa.me/?text=${text}`, '_blank');
+                }}
+                className="py-2.5 px-3 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <MessageSquare size={14} /> WhatsApp
+              </button>
+
+              <button
+                onClick={handleDownloadVCard}
+                className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Download size={14} className="text-indigo-400" /> Save Contact
+              </button>
+
+              <button
+                onClick={() => setShowQrCode(!showQrCode)}
+                className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <QrCode size={14} className="text-indigo-400" /> {showQrCode ? 'Hide QR' : 'Show QR'}
+              </button>
+            </div>
+
+            {/* Optional QR Code Card Preview */}
+            {showQrCode && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="bg-white p-4 rounded-2xl flex flex-col items-center justify-center text-center mt-3 shadow-inner"
+              >
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.href)}&color=0f172a`} 
+                  alt="QR Code" 
+                  className="w-36 h-36 rounded-lg mb-2"
+                />
+                <p className="text-[10px] text-slate-600 font-medium">Scan to open digital card on mobile</p>
+              </motion.div>
             )}
           </motion.div>
         </div>
